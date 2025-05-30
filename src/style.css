@@ -1,0 +1,126 @@
+/* Solarized Light */
+:root {
+    --background-color: #fdf6e3;
+    --text-color: #073642;
+    --border-color: #93a1a1;
+    --accent-color: #268bd2;
+}
+
+/* Darcula */
+@media (prefers-color-scheme:dark) {
+    :root {
+        --background-color: #282a36;
+        --text-color: #f8f8f2;
+        --border-color: #44475a;
+        --accent-color: #bd93f9;
+    }
+
+}
+
+
+a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+body {
+    font-family: "Courier New", monospace;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    width: 50%;
+    margin: auto;
+    display: block;
+    justify-content: space-around;
+}
+
+body img {
+    max-width: 100%;
+}
+
+div.title-links {
+    border-bottom: 2px solid var(--border-color);
+    /* padding */
+    padding: 0.5em;
+}
+
+div.title-links a {
+    border: 2px solid var(--border-color);
+    padding: 0.5em;
+}
+
+div.title-links a:hover {
+    background-color: var(--accent-color);
+    color: var(--background-color);
+    text-decoration: none;
+}
+
+div.footer {
+    border-top: 2px solid var(--border-color);
+    text-align: center;
+}
+
+div.footer a {
+    padding: 0.5em
+}
+
+h1.site-title {
+    /* font size */
+    font-size: 2em;
+    /* text alignment */
+    text-align: center;
+    /* border */
+}
+
+pre {
+    background: var(--border-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;
+    padding: 1em;
+    overflow-x: auto;
+}
+
+/* Display author and date side by side in the header */
+#title-block-header .author,
+#title-block-header .date {
+    display: inline-block;
+    margin-right: 1em;
+}
+
+#title-block-header .author+.date {
+    margin-right: 0;
+}
+
+#title-block-header .title {
+    display: block;
+    margin-bottom: 0.2em;
+}
+
+#title-block-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.blink {
+    animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (max-width: 1200px) {
+    body {
+        width: 98%;
+        margin: 1vw;
+        font-size: 1em;
+    }
+
+    .site-title-dir {
+        display: none;
+    }
+}

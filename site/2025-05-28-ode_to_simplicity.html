@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2025-05-28" />
+  <title>Ode to simplicity</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">Ode to simplicity</h1>
+<p class="author">Brandon James</p>
+<p class="date">2025-05-28</p>
+</header>
+<p>I’ve had a blog in some form for many years. This blog is a
+continuation of my longest lived professional blog. Most of the articles
+were moved from my old domain, neverthenetwork.com (although that domain
+had some stuff that was not moved). I’ve used a few different solutions
+over the years, in order these are:</p>
+<ul>
+<li>Static HTML</li>
+<li>Wordpress</li>
+<li>Ghost</li>
+<li>Flask + Flask-Flatpages</li>
+<li>Jekyll</li>
+</ul>
+<p>Of these, my favorite solution has been Flask-Flatpages. It allowed
+me to write my blog posts in markdown, but then rendered them as HTML at
+server start time. This resulted in a mostly nice workflow. Write
+Markdown -&gt; Use pandoc to generate a preview -&gt; Push to the
+webserver. It wasn’t quite perfect since pandoc and Flask-Flatpages
+generated slightly different HTML, but overall this worked really well.
+Especially for writing. The use of Flask made it easy to write little
+web apps. At the time, I wanted an easy way to get an external view of
+<strong>things</strong> on the internet. That way if something was
+broken at my day job, I could use my website to see if it was broken
+externally as well. I rarely used these tools, but they were fun to
+build. In practice I found if I need to do something like this, It was
+much more flexible to just use my phone or personal laptop and either my
+carrier network or my home network via VPN.</p>
+<p>Wordpress and Ghost mostly suffered from the same issue. I greatly
+preferred ghost over wordpress. It’s a simpler solution and I prefer
+markdown for focused writing. However, I often ran into situations where
+I wanted to write without an internet connection and even when I had an
+internet connection, I really didn’t like writing in my web brower. So I
+found I would often write markdown locally and then copy and paste the
+file into ghost when I was ready to publish.</p>
+<p>I had high hopes for Jekyll, but it’s really a bit complicated for my
+use-case. While it does allow me to write markdown in an editor, running
+it locally is a bit of a pain.</p>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+    </p>
+</div>
+</body>
+</html>

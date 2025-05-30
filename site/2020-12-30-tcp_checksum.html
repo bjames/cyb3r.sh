@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2020-12-30" />
+  <title>No luck? sad! The Problem with TCP Checksums</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">No luck? sad! The Problem with TCP Checksums</h1>
+<p class="author">Brandon James</p>
+<p class="date">2020-12-30</p>
+</header>
+<p><a href="https://news.ycombinator.com/item?id=25335936">Hacker News
+recently led me to a Twitter post about AT&amp;T Fiber flipping bits in
+the Bay Area</a>. This was especially interesting because:</p>
+<ol type="1">
+<li>Intermediate routers and switches forwarded these packets (implying
+a valid Frame Check Sequence)</li>
+<li>The destination hosts accepted these packets (implying a valid TCP
+checksum)</li>
+</ol>
+<p>This article does not try to determine the root cause of the reported
+issue. Nor does it dive into why intermediate routers and switches
+forwarded these packets. Instead, we try to answer the question: Why
+would the destination host accept a packet with flipped bits?</p>
+<h1 id="tldr">TL;DR</h1>
+<p>It’s simple to craft packets with identical checksums. TCP datagrams
+with UTF-8 encoded payloads “No muck? rad!” and “No luck? sad!” have
+identical checksums if the rest of the packet is identical. Changing the
+‘m’ in muck to ‘l’ and the ‘r’ in rad to ‘s’ causes a binary 1 to flip
+to 0 and vice versa. Since these binary digits lie in the same position
+in different 16-bit words, the changes cancel each other out, resulting
+in the same checksum.</p>
+<p>Checksums <em>mostly work</em> for detecting damaged packets, but not
+reliably so. Fortunately, this is largely mitigated at other layers of
+the network stack. There is a small window within a layer 2 device,
+between checksum recalculations, where these types of errors can be
+introduced and even go undetected in many cleartext payloads.</p>
+<h1 id="preliminaries">Preliminaries</h1>
+<p><a href="https://tools.ietf.org/html/rfc793">RFC 793</a> Defines the
+TCP Checksum as follows:</p>
+<blockquote>
+<p>The checksum field is the 16 bit one’s complement of the one’s
+complement sum of all 16 bit words in the header and text. If a segment
+contains an odd number of header and text octets to be checksummed, the
+last octet is padded on the right with zeros to form a 16 bit word for
+checksum purposes. The pad is not transmitted as part of the segment.
+While computing the checksum, the checksum field itself is replaced with
+zeros.</p>
+</blockquote>
+<p><em>Note: Although I use TCP in my example here, the UDP checksum
+works similarly and has the same flaws.</em></p>
+<p>Lets define a couple things to make this easier to understand.</p>
+<p><strong>One’s Complement</strong>: One’s Complement is a fancy way of
+saying “flip all the bits”. 1 becomes 0, 0 becomes 1, 11110001 becomes
+00001110</p>
+<p><strong>One’s Complement Sum</strong>: Binary addition where we add
+carry bits back to the sum<a href="#fn1" class="footnote-ref"
+id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<pre><code>    Example One&#39;s Complement Sum
+    =================
+    10110000 00000000
++   10010000 00000000
+    -----------------
+  1 01000000 00000000
+ +\----------------&gt;1
+    -----------------
+    01000000 00000001</code></pre>
+<h1 id="checksum-calculation">Checksum Calculation</h1>
+<p>TCP/UDP checksum calculation happens as follows:</p>
+<ol type="1">
+<li>Break the packet into 16-bit chunks (padding if necessary)</li>
+<li>Calculate the one’s complement sum as described above</li>
+<li>Take the one’s complement of the sum</li>
+</ol>
+<p>Let’s use scapy to generate some packets. To keep things simple, we
+use a plaintext payload with no application data. Packet #1 has a
+payload of “No muck? rad!” and packet #2 has a payload of “No luck?
+sad!”. Scapy’s <code>show2()</code> function handles the checksum
+calculation for us.</p>
+<pre><code>&gt;&gt;&gt; pkt1 = (IP(src=&quot;192.168.1.253&quot;,dst=&quot;192.168.1.254&quot;)/TCP(sport=65535,dport=65534)/&quot;No muck? rad!&quot;)
+&gt;&gt;&gt; pkt1.show2()
+###[ IP ]### 
+  version= 4
+  ihl= 5
+  tos= 0x0
+  len= 53
+  id= 1
+  flags= 
+  frag= 0
+  ttl= 64
+  proto= tcp
+  chksum= 0xf576
+  src= 192.168.1.253
+  dst= 192.168.1.254
+  \options\
+###[ TCP ]### 
+     sport= 65535
+     dport= 65534
+     seq= 0
+     ack= 0
+     dataofs= 5
+     reserved= 0
+     flags= S
+     window= 8192
+     chksum= 0x1835
+     urgptr= 0
+     options= []
+###[ Raw ]### 
+        load= &#39;No muck? rad!&#39;
+
+&gt;&gt;&gt; pkt2 = (IP(src=&quot;192.168.1.253&quot;,dst=&quot;192.168.1.254&quot;)/TCP(sport=65535,dport=65534)/&quot;No luck? sad!&quot;)
+&gt;&gt;&gt; pkt2.show2()
+###[ IP ]### 
+  version= 4
+  ihl= 5
+  tos= 0x0
+  len= 53
+  id= 1
+  flags= 
+  frag= 0
+  ttl= 64
+  proto= tcp
+  chksum= 0xf576
+  src= 192.168.1.253
+  dst= 192.168.1.254
+  \options\
+###[ TCP ]### 
+     sport= 65535
+     dport= 65534
+     seq= 0
+     ack= 0
+     dataofs= 5
+     reserved= 0
+     flags= S
+     window= 8192
+     chksum= 0x1835
+     urgptr= 0
+     options= []
+###[ Raw ]### 
+        load= &#39;No luck? sad!&#39;</code></pre>
+<p><em>Note: The IP checksum is calculated in the nearly the same way as
+the TCP and UDP checksums. The key difference being the IP checksum only
+takes the IP header as input. Changes in higher layer data do not affect
+the IP checksum.</em></p>
+<p>Since the checksum is a binary sum with carry bits getting shuffled
+to the least significant bit. It’s simple to manipulate the bits in a
+way that doesn’t affect the checksum. Notice in the scapy output, both
+packets have the same TCP checksum. An explanation of this follows:</p>
+<h2 id="utf-8-payloads-in-binary">UTF-8 Payloads in Binary</h2>
+<pre><code>No muck, rad!
+=================
+01001110 01101111 
+00100000 01101101 
+01110101 01100011 
+01101011 00111111 
+00100000 01110010 
+01100001 01100100 
+00100001 00000000
+
+No luck, sad!
+=================
+01001110 01101111 
+00100000 01101100 &lt;- last bit flipped m changes to u
+01110101 01100011 
+01101011 00111111 
+00100000 01110011 &lt;- last bit flipped r changes to s
+01100001 01100100 
+00100001 00000000</code></pre>
+<h2 id="calculating-the-ones-complement-sum-of-each-payload">Calculating
+the One’s Complement Sum of each Payload</h2>
+<pre><code>    No muck? rad!
+    =================
+    01001110 01101111 
++   00100000 01101101 
+    -----------------
+    01101110 11011100
++   01110101 01100011 
+    -----------------
+    11100100 00111111
++   01101011 00111111 
+    -----------------
+  1 01001111 01111110
+ +\----------------&gt;1 &lt;- carry
+    11001111 01111111
++   00100000 01110010 
+    -----------------
+    01101111 11110001
++   01100001 01100100 
+    -----------------
+    11010001 01010101
++   00100001 00000000
+    -----------------
+    11110010 01010101
+
+
+    No luck? sad! 
+    =================
+    01001110 01101111 
++   00100000 01101100 
+    -----------------
+    01101110 11011011
++   01110101 01100011 
+    -----------------
+    11100100 00111110
++   01101011 00111111 
+    -----------------
+  1 01001111 01111101
+ +\----------------&gt;1 &lt;- carry 
+    01001111 01111110
++   00100000 01110011 
+    -----------------
+    01101111 11110001
++   01100001 01100100 
+    -----------------
+    11010001 01010101
++   00100001 00000000
+    -----------------
+    11110010 01010101
+    </code></pre>
+<p>As long as we flip bits so that changes cancel out, the sum (and it’s
+one’s complement) will remain the same. The case I presented above is
+simple: Flipping two bits in the same position in different 16-bit
+words. However, it’s easy to imagine other combinations of bit flipping
+that result in the same sum and therefore, the same checksum.</p>
+<pre><code>    Payload
+    =================
+    10000000 00000010 
++   00000000 00001111 
+    -----------------
+    10000000 00010001
++   00000000 00001110
+    -----------------
+    10000000 00011111
+
+    Mangled Payload
+    =================
+    10000000 00000000
++   10000000 00001111
+    -----------------
+  1 0000000 000001111
+ +\----------------&gt;1 &lt;- carry 
+    0000000 000010000
++   1000000 000001111
+    -----------------
+    10000000 00011111</code></pre>
+<p><em>Note: the above is an arbitrary proof of concept</em></p>
+<h1 id="takeaways-and-closing-thoughts">Takeaways and Closing
+Thoughts</h1>
+<p>We’ve shown it’s trivial to craft packets with identical checksums.
+The checksum is not intended to be a security feature and should not be
+relied on as one. However, the checksum <em>is</em> meant to detect
+damaged packets. It’s easy to imagine a scenario where a hardware
+failure or software bug causes bits to be flipped in a pattern that
+results in valid checksums for damaged packets. So while it may catch
+<em>almost all</em> damaged packets, it would be hard to consider it a
+<em>reliable</em> detection method.</p>
+<p>Many issues caused by the weakness of TCP/UDP checksums are resolved
+at higher and lower layers of the network stack. When encryption is used
+at the application layer, a single flipped bit will turn the encrypted
+message into junk that will most likely be discarded. Layer 2 protocols
+such as Ethernet and 802.11 utilize <strong>Frame Check Sequences
+(FCS)</strong>. The FCS is often implemented as a <strong>Cyclic
+Redundancy Check (CRC)</strong> and doesn’t have the same flaws as
+TCP/UDP Checksums. However, there is some opportunity for uncaught
+payload errors to be introduced by bad hardware or software within a
+layer 2 device since the FCS is removed at ingress and recalculated at
+egress.</p>
+<p>To speculate a bit about the AT&amp;T Fiber bit flipping issue. The
+narrow window of opportunity within a single device, between CRC
+recalculations, may have been what caused the problem. Or it could’ve
+been numerous other things, networks are complicated. Regardless, it
+doesn’t seem like the TCP checksum was doing much to help the
+situation.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>I largely based how I showed this on <a
+href="http://mathforum.org/library/drmath/view/54379.html">The Math
+Forum’s Ask Dr. Math example on one’s complement addition</a>. This is
+actually based on one’s complement subtraction (except in this case we
+skip calculating the one’s complement of the subtrahend), which you can
+learn more about <a
+href="https://courses.cs.vt.edu/csonline/NumberSystems/Lessons/SubtractionWithOnesComplement/index.html">here</a>.<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+    </p>
+</div>
+</body>
+</html>

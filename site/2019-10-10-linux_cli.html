@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2019-10-10" />
+  <title>A Power User’s Guide to the Linux CLI</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">A Power User’s Guide to the Linux CLI</h1>
+<p class="author">Brandon James</p>
+<p class="date">2019-10-10</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Contents</h2>
+<ul>
+<li><a href="#the-unix-philosophy" id="toc-the-unix-philosophy">The Unix
+Philosophy</a></li>
+<li><a href="#defining-the-linux-cli"
+id="toc-defining-the-linux-cli">Defining the Linux CLI</a></li>
+<li><a href="#man-pages" id="toc-man-pages">Man Pages</a></li>
+<li><a href="#navigation" id="toc-navigation">Navigation</a></li>
+<li><a href="#pagers" id="toc-pagers">Pagers</a></li>
+<li><a href="#searching-with-grep-locate-and-which"
+id="toc-searching-with-grep-locate-and-which">Searching with grep,
+locate and which</a>
+<ul>
+<li><a href="#grep" id="toc-grep">grep</a></li>
+<li><a href="#locate" id="toc-locate">locate</a></li>
+<li><a href="#which" id="toc-which">which</a></li>
+</ul></li>
+<li><a href="#ssh" id="toc-ssh">SSH</a>
+<ul>
+<li><a href="#logging-ssh-sessions"
+id="toc-logging-ssh-sessions">Logging SSH Sessions</a></li>
+<li><a href="#the-known-hosts-file" id="toc-the-known-hosts-file">The
+Known Hosts File</a></li>
+<li><a href="#ssh-configuration-file"
+id="toc-ssh-configuration-file">SSH Configuration File</a></li>
+<li><a href="#ssh-arguments" id="toc-ssh-arguments">SSH
+Arguments</a></li>
+<li><a href="#ssh-keys" id="toc-ssh-keys">SSH Keys</a></li>
+</ul></li>
+<li><a href="#vim" id="toc-vim">Vim</a>
+<ul>
+<li><a href="#normal-mode-commands" id="toc-normal-mode-commands">Normal
+Mode Commands</a></li>
+<li><a href="#insert-mode" id="toc-insert-mode">Insert Mode</a></li>
+</ul></li>
+<li><a href="#job-management" id="toc-job-management">Job Management</a>
+<ul>
+<li><a href="#finding-jobs-and-processes"
+id="toc-finding-jobs-and-processes">Finding Jobs and Processes</a></li>
+<li><a href="#stopping-jobs-and-processes"
+id="toc-stopping-jobs-and-processes">Stopping Jobs and
+Processes</a></li>
+<li><a href="#switching-between-jobs"
+id="toc-switching-between-jobs">Switching Between Jobs</a></li>
+</ul></li>
+<li><a href="#io-redirection" id="toc-io-redirection">IO Redirection</a>
+<ul>
+<li><a href="#standard-streams" id="toc-standard-streams">Standard
+Streams</a></li>
+<li><a href="#redirection-operators"
+id="toc-redirection-operators">Redirection Operators</a></li>
+</ul></li>
+<li><a href="#queue" id="toc-queue">Queue</a></li>
+</ul>
+</nav>
+<p>I am a huge fan of Linux<a href="#fn1" class="footnote-ref"
+id="fnref1" role="doc-noteref"><sup>1</sup></a>. In the office most of
+my real work happens through a Red Hat jumpbox, this website is hosted
+on Ubuntu and I’ve been using Linux on my personal machines since 2010<a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>. At first, I was using Linux because
+I’m a nerd and that’s what we do, but I continue to use it because it
+increase my productivity.</p>
+<p>This document is meant to be act as a Linux CLI reference. I plan on
+expanding the document as I have time and hope it ends up being a
+complete reference for Linux power users.</p>
+<h2 id="the-unix-philosophy">The Unix Philosophy</h2>
+<p>Linux falls under the “Unix-like” class of operating systems, all of
+these operating systems follow something known as the Unix Philosophy.
+The Unix Philosophy has a long and somewhat storied history that you can
+read about in the first Chapter of <a
+href="http://www.catb.org/~esr/writings/taoup/html/ch01s06.html"><em>The
+Art of Unix Programming</em> by Eric Steven Raymond</a>. While the book
+is geared towards programmers, understanding the Unix philosophy is sure
+to make you a better user of Linux as well.</p>
+<p>I think of the following quote from <a
+href="https://archive.org/details/bstj57-6-1899/page/n3">Doug
+McIlroy</a> when I think of the Unix Philosophy:</p>
+<ol type="i">
+<li><p>Make each program do one thing well. To do a new job, build
+afresh rather than complicate old programs by adding new
+features.</p></li>
+<li><p>Expect the output of every program to become the input to
+another, as yet unknown, program. Don’t clutter output with extraneous
+information. Avoid stringently columnar or binary input formats. Don’t
+insist on interactive input.</p></li>
+<li><p>Design and build software, even operating systems, to be tried
+early, ideally within weeks. Don’t hesitate to throw away the clumsy
+parts and rebuild them.</p></li>
+<li><p>Use tools in preference to unskilled help to lighten a
+programming task, even if you have to detour to build the tools and
+expect to throw some of them out after you’ve finished using
+them.</p></li>
+</ol>
+<p>As a Linux user, it’s important to keep the first two in mind.
+Realizing that the Linux CLI consists of a collection of small programs
+that can act as input to each other and all follow a similar output
+format is the first step to Linux mastery. If you search for ‘bash
+one-liners’ you will find long strings of text that can be difficult to
+decipher. Once you realize that you are actually looking at multiple
+commands being chained together you can (usually) make sense of how the
+‘one-liner’ works.</p>
+<h2 id="defining-the-linux-cli">Defining the Linux CLI</h2>
+<p>Since Linux can vary from distribution to distribution, I think it’s
+important to define what I’m talking about when I say “the Linux CLI”.
+The Linux CLI consists of a POSIX compliant shell and a set of
+text-based utilities. There are certain utilities you can expect to be
+available by default, but we don’t really have a standard for this<a
+href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a>. Unless otherwise noted, any
+programs or commands that I mention should be available by default on
+most Linux distributions, but I’d be hesitant to guarantee that they’ll
+be available on <em>all</em> Linux distributions.</p>
+<p><strong>Note:</strong> In this document I will use the terms
+<strong>Linux CLI</strong>, <strong>bash</strong> and
+<strong>shell</strong> interchangeably. If there is a standard Linux
+shell, it’s bash, but some Linux distributions do ship with alternative
+shells such as ksh, fish or zsh.</p>
+<h2 id="man-pages">Man Pages</h2>
+<p>Most Linux CLI commands and programs have listings in the system
+manual. To view a man page, simply type <code>man &lt;command&gt;</code>
+where command is the name of the command or program you want to know
+more about. The <code>man</code> program itself even has a man page,
+type <code>man man</code> to try it out. If for some reason you can’t
+find the <code>man</code> page you are looking for you can use
+<code>man -k &lt;keyword&gt;</code> to get a list of <code>man</code>
+pages containing a specific keyword. You can also perform a basic search
+within a man page by typing <code>/&lt;keyword&gt;</code> and then using
+<code>n</code> to jump to the next result or <code>N</code> to jump to
+the previous result. For more advance searches, you can pipe
+<code>man</code> into [<code>grep -n</code>].</p>
+<p>In addition to being a quick way to view manual entries, the
+<code>man</code> program belongs to a class of CLI programs called <a
+href="#pagers">pagers</a>. Pagers give you a way to view the entire
+contents of a file without the need for a scrollbar. With
+<code>man</code> you can move up and down with <code>j</code> and
+<code>k</code>, skip forward a screenful with the spacebar or jump to a
+specific line number by typing it and pressing enter.</p>
+<p>As you read this guide, I encourage you to skim the man pages for the
+utilities I mention.</p>
+<p><strong>Note:</strong> Man pages are so effective that I rarely need
+to turn to the web for my Linux CLI questions. I actually considered
+stopping after writing this section because the man pages explain
+everything <em>far</em> better than I can.</p>
+<h2 id="navigation">Navigation</h2>
+<p>File navigation is one of the places new CLI users get hung up, but
+once you get the basics, it really is quicker and easier than managing
+files with a GUI.</p>
+<ul>
+<li><p>A few notes on the Linux directory layout.</p>
+<ol type="i">
+<li><p>The root of the Linux filesystem is <code>/</code> or the root
+directory (not to be confused with the root user). This is not quite the
+same as being in the root of the C:\ drive on a Windows machine. In
+Linux, all drives are mounted under the root filesystem.</p></li>
+<li><p>All users have a home directory, it traditionally resides under
+<code>/home/&lt;username&gt;</code>. The <code>~</code> symbol refers to
+the current users home directory.</p></li>
+<li><p>Files and folders can be referenced by either absolute or
+relative paths.</p></li>
+</ol>
+<ul>
+<li><p>An absolute path is when you refer to the file or folder by it’s
+full path starting at the root directory. As an example, if you have a
+folder called ‘scripts’ in your home directory the absolute path to a
+script within that directory is
+<code>/home/bjames/scripts/update_files.sh</code>.</p></li>
+<li><p>There a couple ways to refer to a file or folder by relative
+paths</p>
+<ol type="1">
+<li><p>Referencing the file or folder without a preceding <code>/</code>
+uses your current working directory as the base directory. Using the
+script above, the relative path from your home directory would be
+<code>scripts/update_files.sh</code></p></li>
+<li><p>Linux provides two useful shortcuts for relative paths</p></li>
+</ol>
+<ul>
+<li><p>When within a folder, you can refer to the folder as
+<code>.</code>. Again, from our home folder
+<code>./scripts/update_files.sh</code> or from the scripts folder
+<code>./update_files.sh</code> are both relative paths to the
+update_files.sh script.</p></li>
+<li><p><code>..</code> refers to the parent directory. As an example,
+let’s say the absolute path of your working directory is the scripts
+folder from above, <code>/home/bjames/scripts/</code>. If you needed to
+access notes.txt stored in your home directory, you could do so with the
+following relative path: <code>../notes.txt</code>. Note that you can
+use <code>..</code> multiple times in a single path. For instance
+<code>../../</code> refers to <code>/home/</code>.</p></li>
+</ul></li>
+</ul></li>
+<li><p><code>ls</code> Lists the contents of the current directory. It
+can be combined with arguments like <code>ls -l</code> to format the
+output as a list, <code>ls -a</code> to include hidden files in the
+output or <code>ls -h</code> to print the file size in a human readable
+format. Arguments can also be stacked, for example <code>ls -lah</code>
+formats the output as a list, includes hidden files and uses human
+readable file sizes. Many Linux flavors <a
+href="#command-aliases-bash-functions-and-.bashrc">alias</a>
+<code>ls -lah</code> to <code>ll</code>, which means running the command
+<code>ll</code> actually runs <code>ls -lah</code>.</p></li>
+</ul>
+<pre><code>[bjames@lwks1 Documents]$ ls -lah
+total 183M
+drwxr-xr-x.  8 bjames bjames 4.0K Sep  8 17:24  .
+drwx------. 36 bjames bjames 4.0K Sep  8 17:23  ..
+drwxrwxr-x.  2 bjames bjames 4.0K Jul 12 13:51  ACI
+-rw-------.  1 bjames bjames 230K Sep  7 00:10 &#39;LISP - edit.aup&#39;
+drwxrwxr-x.  3 bjames bjames 4.0K Sep  4 21:20 &#39;LISP - edit_data&#39;
+-rw-rw-r--.  1 bjames bjames  12M Sep  4 23:42  LISP.mp3
+drwxrwxr-x. 12 bjames bjames 4.0K Aug 18 16:27  notes
+-rw-rw-r--.  1 bjames bjames  53M Sep  5 15:45  output2.mkv
+-rw-rw-r--.  1 bjames bjames 118M Sep  5 15:41  output.mkv
+-rw-rw-r--.  1 bjames bjames 108K Jul 12 16:36  UA_TRAILRUN_50K_TRAINING_PLAN_2018.pdf
+drwxrwxr-x.  6 bjames bjames 4.0K Jul 12 10:57  Zoom</code></pre>
+<ul>
+<li><code>pwd</code> Prints the path of the current working
+directory</li>
+</ul>
+<pre><code>[bjames@lwks1 Documents]$ pwd
+/home/bjames/Documents</code></pre>
+<ul>
+<li><code>cd</code> Changes the working directory. <code>cd ~</code> or
+just <code>cd</code> by itself takes you to your home directory. You can
+<code>cd</code> using absolute paths <code>cd /var/log/</code>. You can
+also <code>cd</code> using relative paths <code>cd scripts</code> takes
+you to scripts or <code>cd ../notes</code> takes you to the sibling
+folder <code>notes</code>.</li>
+</ul>
+<p>That covers the basics of navigating on the Linux CLI. Here’s an
+example putting it all together.</p>
+<ol type="i">
+<li>We start out in my home directory, which contains 12 folders and no
+files.</li>
+</ol>
+<pre><code>[bjames@lwks1 ~]$ pwd
+/home/bjames  
+[bjames@lwks1 ~]$ ls
+Desktop    Downloads  Pictures  Public  Templates  Videos
+Documents  Music      Projects  snap    tmp</code></pre>
+<ol start="2" type="i">
+<li>From there we <code>cd</code> to my Projects folder using a relative
+path</li>
+</ol>
+<pre><code>[bjames@lwks1 ~]$ cd Projects/
+[bjames@lwks1 Projects]$ ls
+neverthenetwork</code></pre>
+<ol start="3" type="i">
+<li>If we want to go to my Videos folder, we can do so in a few ways.
+Three are shown below:</li>
+</ol>
+<ul>
+<li>Returning to the parent folder and then navigating to the Video
+folder, both using relative paths.</li>
+</ul>
+<pre><code>[bjames@lwks1 Projects]$ pwd
+/home/bjames/Projects
+[bjames@lwks1 Projects]$ cd ..
+[bjames@lwks1 ~]$ cd Videos/
+[bjames@lwks1 Videos]$ pwd
+/home/bjames/Videos</code></pre>
+<ul>
+<li>The absolute path</li>
+</ul>
+<pre><code>[bjames@lwks1 Projects]$ cd /home/bjames/Videos/
+[bjames@lwks1 Videos]$ pwd
+/home/bjames/Videos </code></pre>
+<ul>
+<li>A single relative path</li>
+</ul>
+<pre><code>[bjames@lwks1 Projects]$ cd ../Videos/
+[bjames@lwks1 Videos]$ pwd
+/home/bjames/Videos</code></pre>
+<h2 id="pagers">Pagers</h2>
+<p>If you’ve read many linux guides, you’ve probably seen someone use
+<code>cat file.txt</code> to print the content of a file to the screen.
+This does work, but there is a much better solution. <code>more</code>
+and <code>less</code> both belong to a class of programs known as
+pagers. Pagers work by breaking files into pages or screenfuls of data
+so you don’t need to scroll back up to see the rest of your file. The
+two programs operate similarly, but do have a few differences.</p>
+<ul>
+<li><code>less</code> - Operates similarly to <code>vi</code> and allows
+forward and backward movement through the file. The output of the file
+is not copied to your scrollback buffer<a href="#fn4"
+class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.
+<ul>
+<li>Basic navigation <code>[space]</code> - Move forward one screenful,
+<code>j</code> move forward one line, <code>k</code> move backward one
+line, <code>q</code> quit</li>
+<li>The pager used by <code>man</code> operates similarly to less</li>
+<li><code>less file.txt</code></li>
+</ul></li>
+<li><code>more</code> - Much simpler than <code>less</code>
+<ul>
+<li>Basic navigation [space] - Move forward one screenful</li>
+<li><code>more file.txt</code></li>
+</ul></li>
+</ul>
+<p>Read the man pages (<code>man less</code> and <code>man more</code>)
+for <em>more</em> on both of these.</p>
+<h2 id="searching-with-grep-locate-and-which">Searching with grep,
+locate and which</h2>
+<h3 id="grep">grep</h3>
+<p><code>grep</code> is used to find strings matching a pattern within a
+file. In the most basic case, you might use <code>grep</code> to search
+for a specific string within a file:</p>
+<pre><code>[bjames@lwks1 pages]$ grep &quot;specific string&quot; linux_cli.md
+Grep is used to find strings matching a pattern within a file. In the most basic case, you might use grep to search for a specific string within a file:</code></pre>
+<p>However, the real power of <code>grep</code> lies in regular
+expressions. Current versions of <code>grep</code> support three
+<em>flavors</em> of regex. They are standard <code>grep</code> regex,
+extended <code>grep</code> regex and perl regex. I find myself using
+extended <code>grep</code> for most things. In the below example, we use
+extended regular expressions to find IP addresses within this markdown
+file.</p>
+<pre><code>[bjames@lwks1 pages]$ grep -noE &#39;[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}&#39; linux_cli.md
+193:172.16.12.1
+194:172.16.12.127
+194:172.16.12.130
+&lt;redacted for breavity&gt;
+833:104.27.130.254
+835:104.27.131.254
+876:192.168.88.1</code></pre>
+<p><strong>Note:</strong> in the above output, I also included the
+<code>-n</code> argument, this tells <code>grep</code> to print the line
+number the match was found on. I also used the <code>-o</code> argument,
+which tells grep we want only the matching part of the line. Also note
+the regex above won’t only find valid IPs, for instance 999.999.999.999
+is not a valid IP, but would be considered a match. The regex to only
+match valid IPs is significantly more complicated. When using
+<code>grep</code> it’s generally best to use regex that’s good enough to
+find what you are looking for.</p>
+<p>In addition to searching a single file, <code>grep</code> can be used
+to search multiple files using either a wildcard such as
+<code>grep &lt;pattern&gt; *.log</code>, a single directory
+<code>grep &lt;pattern&gt; ~/logs/</code> or a directory and it’s
+subdirectories <code>grep -r &lt;pattern&gt; ~/logs/</code> (here the
+<code>-r</code> argument stands for recursive).</p>
+<pre><code>[bjames@lwks1 pages]$ grep -Eo &#39;[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}&#39; *.md
+automation_concurrency.md:192.168.1.100
+automation_concurrency.md:192.168.10.0
+&lt;redacted for brevity&gt;
+wlc_cli.md:192.168.0.20
+wlc_cli.md:192.168.1.20</code></pre>
+<p><strong>Note:</strong> Above we found every IP address, subnet mask
+or wildcard mask used in any NTN article.</p>
+<p><code>grep</code> can also be used with <a
+href="#redirection-operators">pipes</a> to search the output of another
+file <code>&lt;command&gt; | grep &lt;pattern&gt;</code></p>
+<pre><code>[bjames@lwks1 pages]$ ls -lah | grep linux
+-rw-rw-r--.  1 bjames bjames  23K Sep 24 23:46 linux_cli.md</code></pre>
+<h4 id="my-most-used-grep-arguments">My most used <code>grep</code>
+arguments</h4>
+<p><code>-E</code> use extended regular expressions.</p>
+<p><code>-v</code> inverse matching, prints all lines that don’t match
+the pattern</p>
+<p><code>-o</code> only output the matching string</p>
+<p><code>-r</code> recursively search sub-directories</p>
+<p><code>-n</code> print the line number the match occurred on</p>
+<p><code>-i</code> case insensitive search</p>
+<p><code>-I</code> ignore binary files</p>
+<p><code>-B [n]</code> print <strong>n</strong> lines of context before
+the match</p>
+<p><code>-A [n]</code> print <strong>n</strong> lines of context after
+the match</p>
+<p><code>grep</code> has tons of options and can be used for finding
+just about anything you’d need to find. I <em>highly</em> recommend
+reading <code>man grep</code> as the need arises.</p>
+<h3 id="locate">locate</h3>
+<p><code>locate</code> is used to find files based on their names. It
+can be used with either basic wildcards or regular expressions.</p>
+<pre><code>[bjames@lwks1 pages]$ locate -i *run*.pdf
+/home/bjames/Documents/UA_TRAILRUN_50K_TRAINING_PLAN_2018.pdf</code></pre>
+<p><strong>Note:</strong> The <code>-i</code> argument tells locate to
+perform a case-insensitive search</p>
+<p>This is useful if I remember all or part of the name of a file, but
+don’t remember where it was saved.</p>
+<h3 id="which">which</h3>
+<p><code>which</code> returns the path of a shell command. This is
+especially useful for user installed programs and aliases.</p>
+<pre><code>[bjames@lwks1 pages]$ which ll
+alias ll=&#39;ls -l --color=auto&#39;
+    /usr/bin/ls</code></pre>
+<h2 id="ssh">SSH</h2>
+<p>Linux has a built in SSH client, called OpenSSH<a href="#fn5"
+class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.
+Basic usage is very simple.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh labtoolbox
+bjames@labtoolbox&#39;s password: 
+bjames@labtoolbox:~$ </code></pre>
+<p>You can also specify a username</p>
+<pre><code>[bjames@lwks1 ~]$ ssh root@labtoolbox
+root@labtoolbox&#39;s password: 
+root@labtoolbox:~$ </code></pre>
+<p><strong>Usability Tip</strong> most Linux distributions ship with a
+program called bash-completion installed. If it’s installed you can use
+tab-completion to fill in the hostname based on your known-hosts and
+ssh-config files. If there are multiple matches it will print out a list
+of matching hosts. This can be useful if you are having trouble
+remembering an IP or hostname.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh 172.16.12.1
+172.16.12.127  172.16.12.130  172.16.12.132  172.16.12.137  </code></pre>
+<h3 id="logging-ssh-sessions">Logging SSH Sessions</h3>
+<p>As network engineers we often need to log our ssh sessions to a file.
+This can be done using the <code>tee</code> program as follows.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh 172.16.12.127 | tee logfile.log</code></pre>
+<p>This is a good time to introduce the concept of <code>|</code> or
+pipes. <code>ssh</code> and <code>tee</code> are two seperate programs.
+Linux CLI programs such as <code>ssh</code> often read from standard
+input (commonly called stdin) write to standard output (commonly called
+stdout). When using a terminal emulator, stdout is printed on the
+terminal and stdin is input to the terminal. <code>|</code> is one of
+the redirection operators in Linux. In this case, we are redirecting the
+output of <code>ssh</code> to the input of <code>tee</code> which in
+turn writes to logfile.log. For more details, read the section titled <a
+href="#io-redirection">IO Redirection</a>.</p>
+<p><strong>Note:</strong><code>ssh</code>, <code>tee</code> and output
+redirection are examples of the first two points of the Unix Philosophy
+at the top of this page. <code>ssh</code> and <code>tee</code> are both
+small programs that do one thing well. In addition, we’ve made the
+output of <code>ssh</code> the input of <code>tee</code>. Redirection is
+an important part of effective CLI use.</p>
+<h3 id="the-known-hosts-file">The Known Hosts File</h3>
+<p>The first time you log into a device you’ll be prompted to add it’s
+RSA key to the known hosts file.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh 192.168.88.1
+The authenticity of host &#39;192.168.88.1 (192.168.88.1)&#39; can&#39;t be established.
+RSA key fingerprint is SHA256:tXxQqN842Uoe/35JLTOOllo5liFu3qOERiid54iIW1Y.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added &#39;192.168.88.1&#39; (RSA) to the list of known hosts.
+bjames@192.168.88.1&#39;s password: </code></pre>
+<p>If the key changes, you’ll be presented with an error message.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh 192.168.88.1
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the RSA key sent by the remote host is
+SHA256:HrknWcZ9j3/gt8TY7iqtsOXgJgEypFzuDD8Mydi5y1o.
+Please contact your system administrator.
+Add correct host key in /home/bjames/.ssh/known_hosts to get rid of this message.
+Offending RSA key in /home/bjames/.ssh/known_hosts:10
+RSA host key for 192.168.88.1 has changed and you have requested strict checking.
+Host key verification failed.</code></pre>
+<p>This can be fixed by manually deleting the key from the known_hosts
+file or you can use <code>ssh-keygen -R &lt;hostname&gt;</code> to
+remove the key from the file.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh-keygen -R 192.168.88.1
+# Host 192.168.88.1 found: line 10
+/home/bjames/.ssh/known_hosts updated.
+Original contents retained as /home/bjames/.ssh/known_hosts.old</code></pre>
+<h3 id="ssh-configuration-file">SSH Configuration File</h3>
+<p>The SSH configuration file is used to control how your system
+connects to other systems via SSH. There are actually multiple SSH
+configuration files on most systems. Commonly,
+<code>/etc/ssh/ssh_config</code> will contain some basic system-wide
+configuration as well as example configuration that has been commented
+out. On modern systems, your system-wide SSH configuration will include
+any <code>.conf</code> file in <code>/etc/ssh/ssh_config.d/</code>. In
+addition to the system-wide configuration files, each user can have a
+configuration file under <code>~/.ssh/config</code>. In general I’ve
+found it best to edit user configuration files first and system-wide
+configuration files only when necessary.</p>
+<p>The SSH Configuration file has a simple syntax.</p>
+<pre><code># This is a line comment
+
+Host &lt;hostname, IP or pattern&gt;
+    # any number of options can be listed here
+    Cipher aes128-ctr
+# Use ssh-keys for all other hosts
+Host *
+    IdentityFile ~/.ssh/id_rsa</code></pre>
+<p><strong>Note:</strong> The SSH Configuration file has it’s own man
+page, you can read it with <code>man ssh_config</code></p>
+<h3 id="ssh-arguments">SSH Arguments</h3>
+<p>Many of the options you configure in the SSH Configuration file have
+equivalent arguments. The one I use most frequently is
+<code>ssh -c &lt;cipher&gt; &lt;hostname&gt;</code> when connecting to
+older devices that don’t use modern SSH ciphers.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh oldhost1
+Unable to negotiate with oldhost1 port 22: no matching cipher found. Their offer: aes128-cbc,3des-cbc,aes192-cbc,aes256-cbc
+[bjames@lwks1 ~]$ ssh -c aes256-cbc oldhost1</code></pre>
+<p>For more SSH arguments read <code>man ssh</code></p>
+<h3 id="ssh-keys">SSH Keys</h3>
+<p>SSH can use public key authentication instead of password
+authentication. As long as your keys are managed correctly, this is both
+more convenient and secure than password authentication. To use key
+based authentication, you must first generate a private key.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh-keygen 
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/bjames/.ssh/id_rsa): test_key
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Passphrases do not match.  Try again.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in test_key.
+Your public key has been saved in test_key.pub.
+The key fingerprint is:
+SHA256:F/hmGkdfO1F+S1fm8cVtJAKHiI7sOQFpAEONwvZjZ5Y bjames@lwks1
+The key&#39;s randomart image is:
++---[RSA 3072]----+
+|Boo.   . ..oo .+B|
+|.=+.  . .... . *O|
+|o..o o. . o   oo*|
+|   ++E.  o o ..o+|
+|  ..=o  S * . o. |
+|    +    B     . |
+|     .  .        |
+|                 |
+|                 |
++----[SHA256]-----+</code></pre>
+<p><strong>Note:</strong> I strongly recommend setting a passphrase,
+especially in a shared environment. If you can’t be bothered to type
+your passphrase more than once per session, you can use
+<code>ssh-agent</code> to store the passphrase.</p>
+<p><code>ssh-keygen</code> generates two files
+<code>&lt;key_name&gt;</code> and <code>&lt;key_name&gt;.pub</code>.
+Once you’ve generated an SSH key pair, you need to copy the public key,
+<code>&lt;key_name&gt;.pub</code> to the systems you need to
+authenticate against.</p>
+<p><strong>Note:</strong> In practice, you’ll probably want to use
+default of <code>~/.ssh/id_rsa</code></p>
+<pre><code>[bjames@lwks1 ~]$ ssh-copy-id -i test_key.pub test.neverthenetwork.com
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: &quot;test_key.pub&quot;
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+bjames@test.neverthenetwork.com&#39;s password: 
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   &quot;ssh &#39;test.neverthenetwork.com&#39;&quot;
+and check to make sure that only the key(s) you wanted were added.</code></pre>
+<p>This program works by copying your <code>&lt;key_name&gt;.pub</code>
+to <code>~/.ssh/authorized_keys</code>. Which can be done manually from
+systems that don’t have <code>ssh-copy-id</code> installed. In addition,
+this might not work on non-unix-like systems. In which case you’ll need
+to copy the contents of <code>&lt;key_name&gt;.pub</code> to the
+authorized key store manually.</p>
+<p>Once the key has been copied, you can log in to the remote system by
+specifying the identity file using <code>ssh -i</code> or by modifying
+your ssh configuration to always use a specific identity file for one or
+every host.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh -i test_key test.neverthenetwork.com 
+Enter passphrase for key &#39;test_key&#39;: 
+Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.15.0-55-generic x86_64)
+
+bjames@test:~$ </code></pre>
+<p><strong>Note:</strong> There are several methods to maintain a list
+of authorized SSH keys across all your systems. One common method is to
+include an <code>authorized_keys</code> file in a configuration
+management system. There are also centralized methods such as storing
+the keys in LDAP.</p>
+<h4 id="ssh-agent">SSH Agent</h4>
+<p>I’m only going to cover the absolute basic use of
+<code>ssh-agent</code> for more information consult
+<code>man ssh-agent</code>. <code>ssh-agent</code> can be used to store
+ssh keys and is especially useful in the case of ssh keys using
+passphrases. To use <code>ssh-agent</code>, it first needs to be
+started.</p>
+<pre><code>[bjames@lwks1 ~]$ eval `ssh-agent`
+Agent pid 21285</code></pre>
+<p>You probably noticed the use of the <code>eval</code> command.
+<code>eval</code> takes input from a file or stdin and evaluates it as
+if it was entered on the CLI. In this case, calling
+<code>ssh-agent</code> by itself would’ve resulted in the following
+output to stdout.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh-agent
+SSH_AUTH_SOCK=/tmp/ssh-k4tysoOInoQM/agent.21285; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=21285; export SSH_AGENT_PID;
+echo Agent pid 21285;</code></pre>
+<p>These are bash commands that create new <a
+href="#environment-variables">environment variables</a> called
+<code>SSH_AUTH_SOCK</code> and <code>SSH_AGENT_PID</code> and then
+prints them to the screen. <code>eval</code> causes these bash commands
+to be run in the current shell.</p>
+<p>Once our <code>ssh-agent</code> is running, we can use
+<code>ssh-add</code> to add keys to the <code>ssh-agent</code>. By
+default it tries to add <code>~./ssh/id_rsa</code>, but you can specify
+a key using <code>ssh-add &lt;key_name&gt;</code>. Once that’s been done
+you can use the identity file without being prompted for the
+passphrase.</p>
+<pre><code>[bjames@lwks1 ~]$ ssh-add test_key
+Enter passphrase for test_key: 
+Identity added: test_key (bjames@lwks1)
+[bjames@lwks1 ~]$ ssh -i test_key goaccess.neverthenetwork.com 
+Welcome to Ubuntu 18.04.2 LTS (GNU/Linux 4.15.0-55-generic x86_64)
+
+bjames@goaccess:~$ </code></pre>
+<p><strong>Note:</strong> This also works with identity files that have
+been specified using the ssh configuration file</p>
+<h2 id="vim">Vim</h2>
+<p><code>vim</code> is commonly the default CLI text editor on linux
+distributions. This means that you need to know how to edit files using
+vim. But don’t fret, even if you only know the basics, <code>vim</code>
+can be a joy to use. I’ve never bothered to learn any of
+<code>vim</code>’s advanced features and tend to use VSCode for
+development and making large edits, but I still really enjoy using
+<code>vim</code> and it’s keyboard centric interface for edits from the
+terminal.</p>
+<p><code>vim</code> has a several modes, but here I’m going to cover the
+<em>basics</em> of <strong>normal</strong> and <strong>insert</strong>.
+For more information I recommend <code>man vim</code> or
+<code>vimtutor</code>, which launches a fantastic interactive guide to
+<code>vim</code>.</p>
+<h3 id="normal-mode-commands">Normal Mode Commands</h3>
+<p><code>j</code> move the cursor down</p>
+<p><code>k</code> move the cursor up</p>
+<p><code>l</code> move the cursor right</p>
+<p><code>h</code> move the cursor left</p>
+<p><code>.</code> repeat the last insert</p>
+<p><code>i</code> switch to insert mode at the current cursor
+location</p>
+<p><code>I</code> switch to insert mode at the beginning of the current
+line</p>
+<p><code>a</code> switch to insert mode in the position following the
+cursor</p>
+<p><code>A</code> switch to insert mode at the end of the line</p>
+<p><code>:w</code> save the file</p>
+<p><code>:wq</code> or <code>:x</code>save the file and quit</p>
+<p><code>:q</code> quit</p>
+<p><code>:q!</code> quit ignoring prompts about the file not being
+saved</p>
+<h3 id="insert-mode">Insert Mode</h3>
+<p><code>ESC</code> switch to Normal Mode</p>
+<h2 id="job-management">Job Management</h2>
+<p>Linux provides a set of utilities and commands to help you handle
+multiple process within a single CLI session.</p>
+<h3 id="finding-jobs-and-processes">Finding Jobs and Processes</h3>
+<p>To view jobs running in your current session use the
+<code>jobs</code> command</p>
+<pre><code>[bjames@lwks1 ~]$ jobs
+[1]   Running                 ping -q 8.8.8.8 &amp;
+[2]   Running                 ping 4.2.2.2 &gt; ping.out &amp;
+[3]+  Stopped                 man bash
+[4]-  Running                 sudo tcpdump -w out.pcap &amp;</code></pre>
+<p>To view processes running under the current user and, use
+<code>ps ux</code></p>
+<pre><code>[bjames@lwks1 ~]$ ps ux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+bjames    2297  0.0  0.0  20556 10668 ?        Ss   19:32   0:00 /usr/lib/system
+&lt;redacted for brevity&gt;
+bjames   16593  0.0  0.0 226752  3608 pts/0    R+   21:44   0:00 ps ux</code></pre>
+<p>To view all processes on the system, use <code>ps aux</code></p>
+<pre><code>[bjames@lwks1 ~]$ ps aux
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0 171856 14844 ?        Ss   19:31   0:03 /usr/lib/system
+&lt;redacted for brevity&gt;
+bjames   16763  0.0  0.0 226752  3604 pts/0    R+   21:45   0:00 ps aux</code></pre>
+<p><strong>Note:</strong> <code>ps</code> has tons of options, but
+<code>ps aux</code> and <code>ps ux</code> tend to provide the most
+useful information, especially when combined with <a
+href="#grep"><code>grep</code></a>. <code>a</code> tells <code>ps</code>
+to include all users in the output, <code>u</code> tells <code>ps</code>
+to format the output as seen above and <code>x</code> tells
+<code>ps</code> to include processes that aren’t assigned to a tty.
+Refer to <code>man ps</code> for more information</p>
+<p><code>top</code> gives you a list of processes sorted by resource
+use</p>
+<pre><code>[bjames@lwks1 ~]$ top
+
+top - 21:53:12 up  2:21,  1 user,  load average: 0.26, 0.37, 0.39
+Tasks: 369 total,   1 running, 365 sleeping,   3 stopped,   0 zombie
+%Cpu(s):  0.7 us,  0.4 sy,  0.0 ni, 98.8 id,  0.0 wa,  0.1 hi,  0.0 si,  0.0 st
+MiB Mem :  64430.3 total,  59678.8 free,   2847.9 used,   1903.7 buff/cache
+MiB Swap:  32280.0 total,  32280.0 free,      0.0 used.  60759.1 avail Mem 
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND    
+ 2343 bjames    20   0 1739572 106636  81552 S   3.0   0.2   1:56.88 Xorg       
+ 2584 bjames    20   0 4790964 227384 113140 S   2.7   0.3   1:44.76 gnome-she+ 
+13769 bjames    20   0  674600  65880  40592 S   2.0   0.1   0:04.11 terminator </code></pre>
+<p><strong>Note:</strong> By default, <code>top</code> sorts by CPU
+utilization. Pressing <code>f</code> brings up a menu that allows you to
+select a different column to sort by.</p>
+<h3 id="stopping-jobs-and-processes">Stopping Jobs and Processes</h3>
+<p>To end the current job, press <code>CTRL+C</code>. This sends
+SIGINT<a href="#fn6" class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a> to the current process. SIGINT asks
+the process to gracefully shutdown. There may be instances where this
+doesn’t work, but in general it will end the process in the
+foreground.</p>
+<pre><code>[bjames@lwks1 neverthenetwork]$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=54 time=9.08 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=54 time=8.97 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=54 time=10.3 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=54 time=9.02 ms
+^C
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 7ms
+rtt min/avg/max/mdev = 8.971/9.329/10.250/0.537 ms</code></pre>
+<p>When <code>CTRL+C</code> doesn’t work, <code>CTRL+Z</code> can be
+used as a workaround. This sends <code>SIGTSTP</code>, which tells the
+terminal to stop the current process. From there, you can kill the
+process, send it to the background or bring it back to the
+foreground.</p>
+<p>Let’s pretend that <code>ping</code> isn’t listening to
+<code>CTRL+C</code></p>
+<pre><code>[bjames@lwks1 neverthenetwork]$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=54 time=9.41 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=54 time=9.61 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=54 time=8.87 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=54 time=8.91 ms
+^Z
+[1]+  Stopped                 ping 8.8.8.8
+[bjames@lwks1 neverthenetwork]$ jobs
+[1]+  Stopped                 ping 8.8.8.8
+[bjames@lwks1 neverthenetwork]$ kill %1</code></pre>
+<p>Notice that we didn’t get the <code>ping statistics</code> lines
+after ping was killed. This is because we stopped the job forcefully
+with <code>kill</code> instead of using <code>CTRL+C</code>.</p>
+<p><code>kill</code> works on both jobs in the current terminal session
+and processes running outside of the current session. When preceded with
+<code>%</code> the number following the command refers to the job number
+(as reported by <code>jobs</code>), without the <code>%</code> it refers
+to the Process-ID or PID. The PID of a process can be found using the
+<code>ps</code> or <code>top</code> commands.</p>
+<pre><code>[bjames@lwks1 ~]$ ps ut | grep ping
+bjames   14437  0.0  0.0 221516  2052 pts/0    S    21:31   0:00 ping -q 8.8.8.8
+bjames   14505  0.0  0.0 221516  2076 pts/0    S    21:32   0:00 ping 4.2.2.2
+bjames   21005  0.0  0.0 215744   832 pts/0    S+   21:59   0:00 grep --color=auto ping
+[bjames@lwks1 ~]$ kill 14505
+[2]   Terminated              ping 4.2.2.2 &gt; ping.out
+[bjames@lwks1 ~]$ ps ut | grep ping
+bjames   14437  0.0  0.0 221516  2052 pts/0    S    21:31   0:00 ping -q 8.8.8.8
+bjames   21064  0.0  0.0 215744   832 pts/0    S+   21:59   0:00 grep --color=auto ping</code></pre>
+<p>By default <code>kill</code> sends SIGTERM, but it can send any of
+the POSIX signals. <code>kill -l</code> lists the signals along with the
+number kill uses to refer to that signal. As an example,
+<code>kill -9 %1</code> would’ve killed ping using SIGKILL instead of
+SIGTERM.</p>
+<p><strong>Note:</strong> SIGKILL should really only be used for
+processes that can’t be killed using SIGTERM or SIGINT. SIGKILL doesn’t
+give the process a chance to clean up before exiting and in many cases
+SIGTERM will work in places SIGINT does not.</p>
+<h3 id="switching-between-jobs">Switching Between Jobs</h3>
+<p>You can start a job in the background by appending <code>&amp;</code>
+to the command <code>ping -q 8.8.8.8 &amp;</code>. You can also send the
+current process to the background by using <code>CTRL + Z</code> to stop
+the process and then <code>bg</code> to have the process run in the
+background. To bring a process back to the foreground, use
+<code>fg</code>. By default <code>fg</code> will bring the most recent
+job to the foreground, but you can specify a process using
+<code>fg %&lt;jobnumber&gt;</code>.</p>
+<pre><code>[bjames@lwks1 ~]$ sudo tcpdump -w out.pcap
+tcpdump: listening on enp4s0, link-type EN10MB (Ethernet), capture size 262144 bytes
+^Z
+[1]+  Stopped                 sudo tcpdump -w out.pcap
+[bjames@lwks1 ~]$ bg
+[1]+ sudo tcpdump -w out.pcap &amp;
+[bjames@lwks1 ~]$ ping -q 8.8.8.8 &amp;
+[2] 26389
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+[bjames@lwks1 ~]$ jobs
+[1]-  Running                 sudo tcpdump -w out.pcap &amp;
+[2]+  Running                 ping -q 8.8.8.8 &amp;
+[bjames@lwks1 ~]$ fg
+ping -q 8.8.8.8
+^C
+--- 8.8.8.8 ping statistics ---
+10 packets transmitted, 10 received, 0% packet loss, time 23ms
+rtt min/avg/max/mdev = 3.571/4.137/5.975/0.687 ms
+[bjames@lwks1 ~]$ fg
+sudo tcpdump -w out.pcap
+^C492 packets captured
+503 packets received by filter
+0 packets dropped by kernel
+[bjames@lwks1 ~]$ </code></pre>
+<p>Note that this doesn’t redirect the command’s output, so it can get a
+little messy. Many commands have arguments that suppress some or all of
+their output. Above I used <code>tcpdump -w</code> to have tcpdump write
+to a file and <code>ping -q</code> to suppress all ping output with the
+exception of the summary statistics. Some commands don’t have a built in
+way of doing this, but in those cases, we can use <a
+href="#io-redirection">IO Redirection</a> as a workaround.</p>
+<h4 id="keeping-jobs-alive">Keeping Jobs Alive</h4>
+<p>Commands sent to the background only stay there until your current
+terminal session ends. This means that if your SSH session ends or you
+close the terminal window on your Linux desktop, all the jobs you’ve
+started die. Luckily, there are a couple of built in ways to keep jobs
+alive after a session ends.</p>
+<h5 id="nohup"><code>nohup</code></h5>
+<p>When a session ends, <code>SIGHUP</code> is sent to all running jobs.
+When <code>SIGHUP</code> is received, jobs clean up and stop.
+<code>nohup</code> prevents programs from receiving <code>SIGHUP</code>
+when you exit and it also redirects their output to
+<code>nohup.out</code>.</p>
+<pre><code>[bjames@lwks1 ~]$ nohup ping 8.8.8.8 &amp;
+[1] 4620
+nohup: ignoring input and appending output to &#39;nohup.out&#39;
+[bjames@lwks1 ~]$ exit</code></pre>
+<p>Later, we can look at the output by reading
+<code>nohup.out</code></p>
+<pre><code>[bjames@lwks1 ~]$ more nohup.out 
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=54 time=3.50 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=54 time=4.06 ms
+&lt;redacted for brevity&gt;
+64 bytes from 8.8.8.8: icmp_seq=81 ttl=54 time=3.99 ms
+64 bytes from 8.8.8.8: icmp_seq=82 ttl=54 time=3.91 ms</code></pre>
+<p>You can’t re-attach to a job ran with <code>nohup</code>. To kill the
+job, you need to know the PID.</p>
+<pre><code>[bjames@lwks1 ~]$ ps aux | grep ping
+bjames    4620  0.0  0.0 221516  2012 pts/1    S    16:43   0:00 ping 8.8.8.8
+bjames    5935  0.0  0.0 215744   896 pts/1    S+   16:49   0:00 grep --color=auto ping
+[bjames@lwks1 ~]$ kill 4620
+[1]+  Terminated              nohup ping 8.8.8.8
+[bjames@lwks1 ~]$</code></pre>
+<h5 id="disown"><code>disown</code></h5>
+<p>By default, disown removes the job from your active job list. Which
+also prevents <code>SIGHUP</code> from being sent to the job. You can
+also use <code>disown -h</code> to keep the job in your active job list,
+but to prevent <code>SIGHUP</code> from being sent to the job when your
+session ends.</p>
+<p>To use <code>disown</code>, start a job, send it to the background
+and then run <code>disown</code> or
+<code>disown %&lt;job-number&gt;</code>.</p>
+<pre><code>[bjames@lwks1 ~]$ ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=54 time=4.03 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=54 time=3.85 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=54 time=4.73 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=54 time=4.34 ms
+^Z
+[1]+  Stopped                 ping 8.8.8.8
+[bjames@lwks1 ~]$ bg
+[1]+ ping 8.8.8.8 &amp;
+[bjames@lwks1 ~]$ 64 bytes from 8.8.8.8: icmp_seq=5 ttl=54 time=3.99 ms
+64 bytes from 8.8.8.8: icmp_seq=6 ttl=54 time=4.05 ms
+64 bytes from 8.8.8.8: icmp_seq=7 ttl=54 time=3.95 ms
+dis64 bytes from 8.8.8.8: icmp_seq=8 ttl=54 time=3.97 ms
+own64 bytes from 8.8.8.8: icmp_seq=9 ttl=54 time=5.58 ms
+
+64 bytes from 8.8.8.8: icmp_seq=11 ttl=54 time=4.11 ms
+[bjames@lwks1 ~]$exit</code></pre>
+<p><strong>Note:</strong><code>nohup</code> and <code>disown</code> are
+functionally the same except <code>nohup</code> handles IO redirection
+for you. Absent of any other <a href="#io-redirection">IO
+Redirection</a>, <code>disown</code>ed jobs will continue to send output
+to <code>stdout</code> until the current session ends.</p>
+<p>I don’t cover <code>screen</code> here as I don’t use it myself, but
+if you find <code>disown</code> or <code>nohup</code> insufficient for
+your needs you might look at using <code>screen</code> instead.</p>
+<h2 id="io-redirection">IO Redirection</h2>
+<p>IO Redirection is one of the more powerful features of the Linux
+command line. I only cover the essentials here, but it’s rare that
+you’ll need much more than what I’ve listed below. For more details try
+searching for Pipelines and REDIRECTION in <code>man bash</code></p>
+<h3 id="standard-streams">Standard Streams</h3>
+<p>POSIX compliant programs have three standard streams.
+<code>stdin</code> or standard input is the input you give to a program.
+<code>stdout</code> or standard output is the output from the program.
+<code>stderr</code> or standard error is a separate output stream (also
+written to the terminal) used for error messages. In keeping with the <a
+href="#unix-philosophy">Unix Philosophy</a> these all have pretty
+predictable output (or take predictable input)[^8]. These streams are
+what allow <a href="#io-redirection">IO Redirection</a> to take
+place.</p>
+<h3 id="redirection-operators">Redirection Operators</h3>
+<ul>
+<li><code>command1 | command2</code>
+<ul>
+<li>Redirects <code>stdout</code> from command1 to <code>stdin</code> of
+command2.</li>
+<li>This type of redirection is known as a <strong>pipe</strong></li>
+<li>Example: using grep to search the output of
+<code>man bash</code></li>
+</ul></li>
+</ul>
+<pre><code>[bjames@lwks1 ~]$ man bash | grep -n Pipelines
+257:   Pipelines</code></pre>
+<ul>
+<li><code>command &gt; outfile.txt</code>
+<ul>
+<li>Redirects <code>stdout</code> to outfile.txt, overwriting the
+file</li>
+<li>Example: using <code>cat</code> to concatenate two files and sending
+the output to outfile.txt</li>
+</ul>
+<pre><code>[bjames@lwks1 ~]$ cat cool.txt notcool.txt &gt; outfile.txt
+[bjames@lwks1 ~]$ more outfile.txt 
+cool
+not cool</code></pre></li>
+<li><code>command &gt;&gt; outfile.txt</code>
+<ul>
+<li>Redirects <code>stdout</code> to outfile.txt, appending the
+file</li>
+<li>Example: using <code>cat</code> to concatenate two files and sending
+the output to outfile.txt after the command in the previous example has
+already been executed</li>
+</ul>
+<pre><code>[bjames@lwks1 ~]$ cat cool.txt notcool.txt &gt;&gt; outfile.txt
+[bjames@lwks1 ~]$ more outfile.txt 
+cool
+not cool
+cool
+not cool    </code></pre></li>
+<li><code>command &amp;&gt; outfile.txt</code>
+<ul>
+<li>Redirects <code>stdout</code> and <code>stdin</code> to
+outfile.txt</li>
+<li>Example: using <code>cat</code> to concatenate an existent file with
+a nonexistent file first only redirecting <code>stdout</code> and then
+redirecting <code>stdout</code> and <code>stderr</code>.</li>
+<li>Appending looks exactly how you would expect
+<code>cat cool.txt doesntexist.txt &amp;&gt;&gt; outfile.txt</code></li>
+</ul>
+<pre><code>[bjames@lwks1 ~]$ cat cool.txt doesntexist.txt &gt; outfile.txt
+cat: doesntexist.txt: No such file or directory
+[bjames@lwks1 ~]$ more outfile.txt 
+cool
+[bjames@lwks1 ~]$ cat cool.txt doesntexist.txt &amp;&gt; outfile.txt
+[bjames@lwks1 ~]$ more outfile.txt 
+cool
+cat: doesntexist.txt: No such file or directory</code></pre></li>
+<li><code>command &lt; infile.txt</code>
+<ul>
+<li>Redirects the contents of <code>infile.txt</code> to
+<code>stdin</code></li>
+<li>Example: Redirect a list of domains to <code>nslookup</code>’s
+<code>stdin</code> ``` [bjames@lwks1 ~]$ nslookup &lt; domainlist.txt
+Server: 192.168.88.1 Address: 192.168.88.1#53</li>
+</ul></li>
+</ul>
+<p>Non-authoritative answer: Name: neverthenetwork.com Address:
+174.138.44.218 Server: 192.168.88.1 Address: 192.168.88.1#53</p>
+<p>Non-authoritative answer: Name: cisco.com Address: 72.163.4.185 Name:
+cisco.com Address: 2001:420:1101:1::185 Server: 192.168.88.1 Address:
+192.168.88.1#53</p>
+<p>Non-authoritative answer: Name: juniper.com Address: 192.107.16.40
+Server: 192.168.88.1 Address: 192.168.88.1#53</p>
+<p>Non-authoritative answer: Name: arista.com Address: 64.68.200.46</p>
+<p>[bjames@lwks1 ~]$</p>
+<pre><code>
+### Chaining Redirection Operators
+
+* Example: Redirect domainlist.txt to `nslookup`, pipe the output into `grep` and redirect `grep`&#39;s output to result.txt</code></pre>
+<p>[bjames@lwks1 ~]$ nslookup &lt; domainlist.txt | grep -B 2
+64.68.200.46 &gt; result.txt [bjames@lwks1 ~]$ more result.txt
+Non-authoritative answer: Name: arista.com Address: 64.68.200.46</p>
+<pre><code>* Example: Concatenate two domain lists, `grep` the output for the word &#39;cisco&#39; and perform an `nslookup` for each result</code></pre>
+<p>[bjames@lwks1 ~]$ cat domainlist.txt domainlist2.txt | grep cisco |
+nslookup Server: 192.168.88.1 Address: 192.168.88.1#53</p>
+<p>Non-authoritative answer: Name: cisco.com Address: 72.163.4.185 Name:
+cisco.com Address: 2001:420:1101:1::185 Server: 192.168.88.1 Address:
+192.168.88.1#53</p>
+<p>Non-authoritative answer: Name: sanfrancisco.com Address:
+104.27.130.254 Name: sanfrancisco.com Address: 104.27.131.254 Name:
+sanfrancisco.com Address: 2606:4700:30::681b:82fe Name: sanfrancisco.com
+Address: 2606:4700:30::681b:83fe</p>
+<pre><code>
+## Command Aliases, Bash Functions and .bashrc
+
+The `alias` command is used to create command aliases. As an example, lets create a new alias called `isotime`. Let&#39;s say `date +&quot;%Y-%m-%dT%H%M%S&quot;` gives us the date and time in the format we&#39;d like. This isn&#39;t a fun command to type, so lets create an alias.
+</code></pre>
+<p>[bjames@lwks1 ~]$ alias isotime=“date +”%Y-%m-%dT%H%M%S””
+[bjames@lwks1 ~]$ isotime 2019-10-09T091650</p>
+<pre><code>
+__Note:__The `date` command has a argument that returns ISO 8601 formatted timestamps, but it includes colons in the timestamp. If we want to add timestamps to files, colons may cause problems.
+
+Aliases are great for simple, hard to remember strings of commands, but they can&#39;t be used for anything that requires variables. Luckily, bash is both a shell and a functional programming language. So for anything that requires variables, we can write functions. 
+
+In the [SSH](#ssh) section we learned that you can log ssh sessions using `ssh hostname | tee logfile.log`. This isn&#39;t difficult to remember, but we might as well shorten the command a bit if we are going to be typing it regularly. This is a task that lends itself well to bash functions. 
+</code></pre>
+<p>function logssh() { currtime=$(isotime); ssh $1 | tee -a
+~/sshlogs/<span class="math inline">1−</span>currtime.log; }</p>
+<pre><code>
+When working with bash functions `$n` refers to the nth command line argument. This means $1 refers to the string following `logssh`. 
+
+__Note:__ I&#39;m not going to go into detail on writing bash scripts here. That&#39;s outside of the scope of this document. I do want to give you a basic example of what they are and how to use them.
+
+To make the function available, we can simply paste the entire function into our terminal. 
+</code></pre>
+<p>[bjames@lwks1 ~]$ alias isotime=“date +”%Y-%m-%dT%H%M%S””
+[bjames@lwks1 ~]$ function logssh() &gt; { &gt; &gt;
+currtime=$(isotime); &gt; ssh $1 | tee -a ~/sshlogs/<span
+class="math inline">1−</span>currtime.log; &gt; &gt; } [bjames@lwks1 ~]$
+logssh 192.168.88.1</p>
+<pre><code>__Note:__ In this function, we leveraged the alias we created earlier. For completeness, I recreate the alias below. 
+
+There is one problem with this method, the function and alias we just created are only available in the current terminal session. Future and concurrent sessions can&#39;t make use of the function and alias we just created. 
+
+### .bashrc
+
+`.bashrc` is a file that contains bash commands that are ran when a new terminal session is started. Each user has their own `.bashrc` file located at `~/.bashrc`. If we want `isotime` and `logssh` to be available for future terminal sessions, we can add them to our `.bashrc`. 
+</code></pre>
+<p>alias isotime=“date +”%Y-%m-%dT%H%M%S”” function logssh() {
+currtime=$(isotime); ssh $1 | tee -a ~/sshlogs/<span
+class="math inline">1−</span>currtime.log; }</p>
+<pre><code>
+Upon login, the `alias` command is ran and the `logssh` function is created and ready to be ran. It should also be noted that `.bashrc` commands that write to `stdout` _will_ write to `stdout` when the session starts. 
+
+__Note:__ On my personal machines I like to add `fortune | cowsay` to the bottom of my `.bashrc` so that I&#39;m greeted by a cow each time I open a new terminal window. Fortune and Cowsay aren&#39;t usually installed by default, but are most likely available through your distribution&#39;s package manager.
+</code></pre>
+<hr />
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: right;">firewall needs cooling &gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">  ^__^</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">  (oo)_______</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">(__)  )/\</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">||—-w |</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">|| ||</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">bjames@lwks1 ~]$</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">``</td>
+</tr>
+</tbody>
+</table>
+<h2 id="queue">Queue</h2>
+<p>Things I plan on adding as time allows</p>
+<ul>
+<li>Network Utilities
+<ul>
+<li>tcpdump</li>
+<li>dig and nslookup</li>
+<li>netcat</li>
+<li>whois</li>
+<li>traceroute, tracepath and mtr</li>
+<li>ping</li>
+<li>dhcping</li>
+</ul></li>
+<li>File Transfer
+<ul>
+<li>Clients: SCP, SFTP, FTP</li>
+<li>Servers: Python Simple HTTP Server</li>
+</ul></li>
+<li>Text Manipulation
+<ul>
+<li>sed</li>
+<li>awk</li>
+<li>cat</li>
+</ul></li>
+<li>SSH
+<ul>
+<li>Tunneling</li>
+</ul></li>
+</ul>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>My apologies to Richard Stallman, <a
+href="https://www.gnu.org/gnu/linux-and-gnu.en.html">GNU+Linux</a> just
+doesn’t roll of the tongue quite as well.<a href="#fnref1"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>And Fedora since the ‘Beefy Miracle’ release in 2011!<a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The <a
+href="http://refspecs.linuxfoundation.org/LSB_4.1.0/LSB-Core-generic/LSB-Core-generic/command.html#CMDUTIL">Linux
+Standard Base</a> is the closest thing we have to a standard. It
+contains a very small subset of the programs you’d find on a typical
+Linux installation.<a href="#fnref3" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>This is due to a feature called alternate screen. I
+generally don’t mind altscreen, but there are ways to <a
+href="https://www.shallowsky.com/linux/noaltscreen.html">effectively
+disable it</a>.<a href="#fnref4" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>OpenSSH is a widely used product of the OpenBSD Project,
+another Unix-like operating system.<a href="#fnref5"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The wikipedia entry on <a
+href="https://en.wikipedia.org/wiki/Signal_(IPC)#POSIX_signals">POSIX
+signals</a> is a pretty good reference for what each signal actually
+means.<a href="#fnref6" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+    </p>
+</div>
+</body>
+</html>
