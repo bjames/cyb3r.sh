@@ -1,13 +1,19 @@
 ---
 title: Ode to simplicity
-date: 2025-05-28
+date: 2025-05-29
 tags:
 - Bash
 - Linux
 author: Brandon James
 ---
 
-I've had a blog in some form for many years. This blog is a continuation of my longest lived professional blog. Most of the articles were moved from my old domain, neverthenetwork.com (although that domain had some stuff that was not moved). I've used a few different solutions over the years, in order these are:
+I've had a blog in some form for many years. This blog is a continuation of my longest lived professional blog. Most of the articles were moved from my old domain, neverthenetwork.com (although that domain had some stuff that was not moved). I'm particularly excited about this release because I think I've finally landed on something that's truely simple. I'll do a deeper dive in a follow-up post, but this site effectively works as follows:
+
+Write Markdown -> Run a shell script -> Git Commit/Push
+
+The shell script generates a static site using pandoc and a little bit of bash. The website looks exactly the same whether behind nginx on the web or when served locally from my laptop. All I have to do now is write and I can do my writing in any text editor of my choosing. 
+
+I've used a few different solutions over the years, in order these are:
 
 - Static HTML
 - Wordpress
@@ -19,4 +25,4 @@ Of these, my favorite solution has been Flask-Flatpages. It allowed me to write 
 
 Wordpress and Ghost mostly suffered from the same issue. I greatly preferred ghost over wordpress. It's a simpler solution and I prefer markdown for focused writing. However, I often ran into situations where I wanted to write without an internet connection and even when I had an internet connection, I really didn't like writing in my web brower. So I found I would often write markdown locally and then copy and paste the file into ghost when I was ready to publish.
 
-I had high hopes for Jekyll, but it's really a bit complicated for my use-case. While it does allow me to write markdown in an editor, running it locally is a bit of a pain. 
+I had high hopes for Jekyll, but it's really a bit complicated for my use-case. While it does allow me to write markdown in an editor, running it locally is a bit of a pain and unless you run it locally, you can't be exactly sure what the article will look like before it's been pushed. Also, themes are challenging enough that I can't be bothered to mess with them. 
