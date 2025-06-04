@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Brandon James" />
-  <meta name="dcterms.date" content="2025-05-28" />
+  <meta name="dcterms.date" content="2025-05-29" />
   <title>Ode to simplicity</title>
   <style>
     code{white-space: pre-wrap;}
@@ -39,13 +39,22 @@
 <header id="title-block-header">
 <h1 class="title">Ode to simplicity</h1>
 <p class="author">Brandon James</p>
-<p class="date">2025-05-28</p>
+<p class="date">2025-05-29</p>
 </header>
 <p>I’ve had a blog in some form for many years. This blog is a
 continuation of my longest lived professional blog. Most of the articles
 were moved from my old domain, neverthenetwork.com (although that domain
-had some stuff that was not moved). I’ve used a few different solutions
-over the years, in order these are:</p>
+had some stuff that was not moved). I’m particularly excited about this
+release because I think I’ve finally landed on something that’s truely
+simple. I’ll do a deeper dive in a follow-up post, but this site
+effectively works as follows:</p>
+<p>Write Markdown -&gt; Run a shell script -&gt; Git Commit/Push</p>
+<p>The shell script generates a static site using pandoc and a little
+bit of bash. The website looks exactly the same whether behind nginx on
+the web or when served locally from my laptop. All I have to do now is
+write and I can do my writing in any text editor of my choosing.</p>
+<p>I’ve used a few different solutions over the years, in order these
+are:</p>
 <ul>
 <li>Static HTML</li>
 <li>Wordpress</li>
@@ -76,7 +85,10 @@ found I would often write markdown locally and then copy and paste the
 file into ghost when I was ready to publish.</p>
 <p>I had high hopes for Jekyll, but it’s really a bit complicated for my
 use-case. While it does allow me to write markdown in an editor, running
-it locally is a bit of a pain.</p>
+it locally is a bit of a pain and unless you run it locally, you can’t
+be exactly sure what the article will look like before it’s been pushed.
+Also, themes are challenging enough that I can’t be bothered to mess
+with them.</p>
 <div class="footer">
     <p>
         <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
