@@ -113,14 +113,22 @@ pre {
     }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1152px) {
     body {
-        width: 98%;
-        margin: 1vw;
-        font-size: 1em;
+        width: 80%;
+        margin: auto;
     }
 
     .site-title-dir {
         display: none;
     }
+}
+
+@media (max-width: 768px) {
+    body {
+        width: 98%;
+        margin: auto;
+        font-size: 1em;
+    }
+
 }
