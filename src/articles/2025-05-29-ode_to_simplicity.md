@@ -18,7 +18,7 @@ I've used a few different solutions over the years, in order these are:
 - Static HTML
 - Wordpress
 - Ghost
-- Custom Site built on Flask + Flask-Flatpages
+- Custom site built on Flask + Flask-Flatpages
 - Jekyll 
 
 Of these, my favorite solution has been Flask-Flatpages. It allowed me to write my blog posts in markdown, but then rendered them as HTML at server start time. This resulted in a mostly nice workflow. Write Markdown -> Use pandoc to generate a preview -> Push to the webserver. It wasn't quite perfect since pandoc and Flask-Flatpages generated slightly different HTML, but overall this worked really well. Especially for writing. The use of Flask made it easy to write little web apps. At the time, I wanted an easy way to get an external view of **things** on the internet. That way if something was broken at my day job, I could use my website to see if it was broken externally as well. I rarely used these tools, but they were fun to build. In practice I found if I need to do something like this, It was much more flexible to just use my phone or personal laptop and either my carrier network or my home network via VPN. 
