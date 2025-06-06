@@ -8,6 +8,6 @@ Hello! My name is Brandon James. I am a network security engineer, working for m
 
 Outside of tech, I'm a father, husband, dog owner, trail runner and wannabe landscape/wildlife photographer. There was a point in my life where I had a web presence for all my hobbys, but that day is gone and I'm happy to keep it that way.
 
-![family photo](media/family.jpg "My Family")
+![The James Family!](media/family.jpg "The James Family!")
 
 [^1]: Any options expressed here are solely my own and do not reflect the position or policy of my employer.
