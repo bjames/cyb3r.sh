@@ -40,6 +40,16 @@ body {
 
 body img {
     max-width: 100%;
+    /*center the images*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 div.title-links {

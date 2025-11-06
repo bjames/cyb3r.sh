@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2025-09-18" />
+  <title>Hardware Hacking Essentials</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">Hardware Hacking Essentials</h1>
+<p class="author">Brandon James</p>
+<p class="date">2025-09-18</p>
+</header>
+<p>Hardware hacking is something I play with from time to time. This is
+meant to be something less than a walkthrough, think of it as a nudge in
+the right direction that does double duty as notes for myself when I
+need a bit of a refresher.</p>
+<h1 id="targets">Targets</h1>
+<ul>
+<li><a
+href="https://www.tp-link.com/us/home-networking/wifi-router/tl-wr841n/">TP-Link
+TL-WR841N</a>
+<ul>
+<li>This is a pretty common intro to hardware hacking target. <a
+href="https://academy.tcm-sec.com/">TCM Security</a> uses it in their
+hardware hacking course. If you want to follow this with a much more in
+depth course, I’d highly recommend TCM.</li>
+</ul></li>
+<li><a href="https://owletbaby.com/products/owlet-cam-2">Owlett Cam</a>
+(v1 - link is to V2)
+<ul>
+<li>This is something that I had lying around and that happened to not
+immediately give you a shell on UART, but wasn’t overly difficult to get
+a shell on.</li>
+</ul></li>
+</ul>
+<h1 id="hardware-used">Hardware Used</h1>
+<ul>
+<li>A multimeter with continuity and voltage modes. I have a UNI-T
+UT139C and it’s little brother UNI-T UT116C.</li>
+<li>A flash programmer supported by <code>flashrom</code> (see
+<code>flashrom -p</code> for a list). I use the CH421a, <a
+href="https://buspirate/">buspirate</a> has this listed as a feature,
+but it’s so easy with the CH421a I honestly just reach for it instead
+despite owning a buspirate.</li>
+<li>A logic analyzer. I use the <a
+href="https://www.dreamsourcelab.com/product/dslogic-series/">DSLogic
+U3Pro16</a>, <a href="https://www.saleae.com/">Saleae</a> is also always
+a good choice. There are also plenty of cheap logic analyzers that can
+handle slower protocols like UART.</li>
+<li>USB-to-UART, there are quite a few tools out here that can do this.
+Cheap CP2102 adapters from amazon do the job just fine, but for a few
+more dollars, a <a href="https://buspirate.com/">buspirate</a> or <a
+href="https://flipperzero.one/">flipper zero</a> (ok, this one is more
+than a few dollars more) can do all that and more.</li>
+</ul>
+<h1 id="software-used">Software Used</h1>
+<ul>
+<li>Serial terminal emulator - I use <code>picocom</code> for this.
+Alternatively you can use <code>screen</code> or PuTTY if on Windows. I
+avoid <code>screen</code> because <code>screen</code> inside
+<code>tmux</code> can be a pain.</li>
+<li>An application to interface with your logic analyzer. I use DSView
+(available as a flatpak) because I use a DSLogic device. Seleae users
+would use Logic2 and (generally) everyone else should use Sigrok</li>
+<li>Flashrom to dump flash memory</li>
+<li>Binwalk to extract data from the flash dump</li>
+</ul>
+<h1 id="probing-for-interesting-points">Probing for interesting
+points</h1>
+<p>With my multimeter, I’m usually trying to answer a few questions.</p>
+<ol type="1">
+<li>Where are my ground points?</li>
+<li>What points on the PCB might be interesting for further
+analysis?</li>
+<li>What points (if any) might blow up my equipment meant to operate at
+logic levels.</li>
+</ol>
+<h2 id="ground-points">Ground Points</h2>
+<p>I like options when it comes to ground points. Voltage is measured
+relative to ground, so anytime we measure an electrical signal, we need
+to make that measurement relative to that device’s ground. This may or
+may not be the same as the device we are measuring from. As an example,
+I have a Raspberry Pi on my workbench, when measuring voltage of a point
+labeled 3v3 using a ground point on the device it measures 3.3v (red
+lead on 3v3, black on GND), however if I ground my multimeter to a
+different device I measure 2.8v (red lead on 3v3, black on my grounded
+anti-static mat’s ground port).</p>
+<p>Ground points are normally be found using continuity mode on your
+multimeter while the device is unplugged. In continuity mode, your
+multimeter sends a small current through the circuit. If this is
+received by the opposite test lead, the multimeter beeps (and in the
+case of mine, it also displays the resistance measurement). Often there
+will be at least one labeled ground, some devices are ground via their
+chassis, others through the connection to their power supply. Note that
+grounds will always have continuity with one another, but not every two
+points with continuity are grounds. So you want to ensure you have a
+known ground before you can find other ground points.</p>
+<p>Once you have your ground points (or at least know where enough of
+them are to be useful)</p>
+<h1 id="using-a-logic-analyzer">Using a logic analyzer</h1>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+    </p>
+</div>
+</body>
+</html>

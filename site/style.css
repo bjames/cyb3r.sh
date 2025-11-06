@@ -40,6 +40,16 @@ body {
 
 body img {
     max-width: 100%;
+    /*center the images*/
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 div.title-links {
@@ -68,10 +78,22 @@ div.footer a {
     padding: 0.5em
 }
 
+h1 {
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.3em;
+}
+
 h1.site-title {
     font-size: 2em;
     text-align: center;
     font-family: 'Courier New', Courier, monospace;
+    padding-bottom: 0em;
+    border-bottom: none;
+}
+
+h1.title {
+    padding-bottom: 0em;
+    border-bottom: none;
 }
 
 pre {
@@ -80,6 +102,40 @@ pre {
     border-radius: 4px;
     padding: 1em;
     overflow-x: auto;
+}
+
+blockquote {
+    border-left: 4px solid var(--accent-color);
+    background: var(--border-color);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    font-style: italic;
+}
+
+blockquote p {
+    margin: 0.5em 0;
+}
+
+table {
+    margin: 1em auto;
+    border-collapse: collapse;
+    border: 2px solid var(--border-color);
+}
+
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 0.5em 1em;
+    text-align: left;
+}
+
+th {
+    background: var(--border-color);
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background: var(--border-color);
+    opacity: 0.7;
 }
 
 /* Display author and date side by side in the header */

