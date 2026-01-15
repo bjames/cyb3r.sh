@@ -26,6 +26,7 @@
   </style>
   <link rel="stylesheet" href="style.css" />
   <link rel="shortcut icon" href="favicon.png">
+  <link rel="alternate" type="application/rss+xml" title="cyb3r.sh RSS Feed" href="https://cyb3r.sh/rss.xml">
 </head>
 <body>
 <div class="header">
@@ -44,12 +45,12 @@
 <p>Before I start writing challenges for the 2025 edition of the NoCo
 Hackers annual CTF, I wanted to look back at some of the challenges I’ve
 written in the past. 2023 was the first annual NoCo Hackers CTF (it was
-also the year NoCo Hackers was founded), in 2023 I was the sole
-contributor, so this also encompasses every challenge from that
+also the year NoCo Hackers was founded!), in 2023 I was the sole
+contributor, so this writeup encompasses every challenge from that
 year.</p>
-<p>For the NoCo Hackers CTFs, my goal is to keep things fun, interesting
-and educational with a set of challenges that should be solvable by most
-participants.</p>
+<p>For the NoCo Hackers CTFs, my goal has been to keep things fun,
+interesting and educational with a set of challenges that should be
+solvable by most participants.</p>
 <h1 id="overview">Overview</h1>
 <ul>
 <li><a href="#ctf-infrastructure">CTF Infrastructure</a> - The physical
@@ -405,29 +406,29 @@ defined as a bitwise OR where the output is only “1” if the inputs are
 different. A truth table follows:</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>A</th>
 <th>B</th>
 <th>A∨B</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>0</td>
 <td>0</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>0</td>
 <td>1</td>
 <td>1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>0</td>
 <td>1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>1</td>
 <td>1</td>
 <td>0</td>
@@ -438,34 +439,34 @@ different. A truth table follows:</p>
 will yield input B.</p>
 <table>
 <thead>
-<tr class="header">
+<tr>
 <th>input</th>
 <th>mask</th>
 <th>input ∨ mask</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>0x08</td>
 <td>0x66 (ascii f)</td>
 <td>0x6e (ascii n)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>0x03</td>
 <td>0x6c (ascii l)</td>
 <td>0x6f (ascii o)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>0x02</td>
 <td>0x61 (ascii a)</td>
 <td>0x63 (ascii c)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>0x08</td>
 <td>0x67 (ascii g)</td>
 <td>0x6f (ascii o)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>0x13</td>
 <td>0x7b (ascii {)</td>
 <td>0x68 (ascii h)</td>
@@ -582,7 +583,7 @@ href="media/ping_patterns_decode.webm">Video</a></video></p>
     <p>
         <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
             href="https://www.strava.com/athletes/8443527">strava</a>
-        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a> <a href="rss.xml">rss</a>
     </p>
 </div>
 </body>

@@ -43,6 +43,9 @@ else
     echo "No new articles found, skipping index generation."
 fi
 
+# Generate RSS feed
+./gen_rss.sh
+
 if [ src/about.md -ot site/about.html ]; then
     echo "About page has not been modified since last generation, skipping..."
 else

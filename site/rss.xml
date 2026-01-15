@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>cyb3r.sh</title>
+    <link>https://cyb3r.sh/</link>
+    <description>Security, CTF writeups, and technical blog</description>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 14 Jan 2026 21:31:01 GMT</lastBuildDate>
+    <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>NoCo Hackers 2023 CTF Walkthrough</title>
+      <link>https://cyb3r.sh/2025-11-05-noco_hackers_2023_ctf_walkthrough.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2025-11-05-noco_hackers_2023_ctf_walkthrough.html</guid>
+      <pubDate>Wed, 05 Nov 2025 00:00:00 GMT</pubDate>
+      <description>Before I start writing challenges for the 2025 edition of the NoCo Hackers annual CTF, I wanted to look back at some of the challenges I&apos;ve written in the past. 2023 was the first annual NoCo Hackers CTF (it was also the year NoCo Hackers was founded!), in 2023 I was the sole contributor, so this writeup encompasses every challenge from that year. </description>
+    </item>
+    <item>
+      <title>Ode to simplicity</title>
+      <link>https://cyb3r.sh/2025-05-29-ode_to_simplicity.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2025-05-29-ode_to_simplicity.html</guid>
+      <pubDate>Thu, 29 May 2025 00:00:00 GMT</pubDate>
+      <description>I&apos;ve had a blog in some form for many years. This blog is a continuation of my longest lived professional blog. Most of the articles were moved from my old domain, neverthenetwork.com (although that domain had some stuff that was not moved). I&apos;m particularly excited about this release because I think I&apos;ve finally landed on something that&apos;s truely simple. I&apos;ll do a deeper dive in a follow-up post, but this site effectively works as follows:</description>
+    </item>
+    <item>
+      <title>If you knock, I&apos;ll let you in. Marking UDP traffic as Established.</title>
+      <link>https://cyb3r.sh/2021-04-29-If_you_knock%2C_I%27ll_let_you_in.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2021-04-29-If_you_knock%2C_I%27ll_let_you_in.html</guid>
+      <pubDate>Thu, 29 Apr 2021 00:00:00 GMT</pubDate>
+      <description>Despite being a connectionless protocol, many firewalls are able to track the state of UDP communication. One such firewall is IPtables on Linux. Let&apos;s consider a simple IPtables input policy permitting related and established traffic, but dropping everything else. </description>
+    </item>
+    <item>
+      <title>No luck? sad! The Problem with TCP Checksums</title>
+      <link>https://cyb3r.sh/2020-12-30-tcp_checksum.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2020-12-30-tcp_checksum.html</guid>
+      <pubDate>Wed, 30 Dec 2020 00:00:00 GMT</pubDate>
+      <description>[Hacker News recently led me to a Twitter post about AT&amp;T Fiber flipping bits in the Bay Area](https://news.ycombinator.com/item?id=25335936). This was especially interesting because:</description>
+    </item>
+    <item>
+      <title>Bootstrap Router Hash Function</title>
+      <link>https://cyb3r.sh/2019-12-06-rp_hash.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2019-12-06-rp_hash.html</guid>
+      <pubDate>Fri, 06 Dec 2019 00:00:00 GMT</pubDate>
+      <description>[RFC 7761](https://tools.ietf.org/html/rfc7761#section-4.7.2) describes a hash function used to load balance multicast groups between Rendezvous Point (RP) candidates when you are using Bootstrap Router (BSR). The hash function isn&apos;t straight forward and I was unable to find a resource that described it in detail. One feature of the hash function is an adjustable hash mask length. I think it&apos;s important to understand what the function does and how adjusting the mask impacts RP selection. I do my best to describe it here and provide some resources to help you select the best hash mask length for your environment.   </description>
+    </item>
+    <item>
+      <title>A Power User&apos;s Guide to the Linux CLI</title>
+      <link>https://cyb3r.sh/2019-10-10-linux_cli.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2019-10-10-linux_cli.html</guid>
+      <pubDate>Thu, 10 Oct 2019 00:00:00 GMT</pubDate>
+      <description>I am a huge fan of Linux[^1]. In the office most of my real work happens through a Red Hat jumpbox, this website is hosted on Ubuntu and I&apos;ve been using Linux on my personal machines since 2010[^2]. At first, I was using Linux because I&apos;m a nerd and that&apos;s what we do, but I continue to use it because it increase my productivity. </description>
+    </item>
+    <item>
+      <title>Locator/ID Separation Protocol - LISP</title>
+      <link>https://cyb3r.sh/2019-09-04-lisp.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2019-09-04-lisp.html</guid>
+      <pubDate>Wed, 04 Sep 2019 00:00:00 GMT</pubDate>
+      <description>&lt;iframe src=&quot;https://pinecast.com/player/3ba520d4-69f1-4e69-ba83-7750b4dbba54?theme=minimal&quot; seamless height=&quot;60&quot; style=&quot;border:0&quot; class=&quot;pinecast-embed&quot; frameborder=&quot;0&quot; width=&quot;100%&quot;&gt;&lt;/iframe&gt;</description>
+    </item>
+    <item>
+      <title>Bitwise Operations and Subnetting</title>
+      <link>https://cyb3r.sh/2019-07-29-bitwise_subnetting.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2019-07-29-bitwise_subnetting.html</guid>
+      <pubDate>Mon, 29 Jul 2019 00:00:00 GMT</pubDate>
+      <description>Back in September of 2016 I wrote a [subnet calculator in C](https://github.com/bjames/subnet) and then blogged about it. This entry is based on that old blog post.</description>
+    </item>
+    <item>
+      <title>Don&apos;t use FHRPs without Authentication</title>
+      <link>https://cyb3r.sh/2019-02-17-fhrp_authentication.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2019-02-17-fhrp_authentication.html</guid>
+      <pubDate>Sun, 17 Feb 2019 00:00:00 GMT</pubDate>
+      <description>You are most likely running a first hop redundancy protocol somewhere in your network. If you aren&apos;t routing at the access layer and your running a traditional redundant core (ie you aren&apos;t using a switch virtualization platform such as Cisco&apos;s VSS), one of those places is probably your user facing SVIs. If you aren&apos;t using *encrypted* authentication on your FHRP, you&apos;re putting your enterprise at risk. </description>
+    </item>
+  </channel>
+</rss>
