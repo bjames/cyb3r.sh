@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 15 Jan 2026 13:15:38 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 21 Jan 2026 20:26:24 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>Allied Mastercomputer - Recreating a Sci-Fi Legend</title>
+      <link>https://cyb3r.sh/2026-01-21-allied_master_computer.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-01-21-allied_master_computer.html</guid>
+      <pubDate>Wed, 21 Jan 2026 00:00:00 GMT</pubDate>
+      <description>Last Halloween, I had just wrapped up my MCS portfolio and coursework. I decided to celebrate by switching gears and building something at the intersection of hardware and software. A decoration with its basis in a horror story seemed to fit. I chose to base this project on &quot;I Have No Mouth and I Must Scream&quot; by Harlan Ellison. Since it&apos;s a short story, I knew it wouldn&apos;t take long to re-read and it fits well with my love for the retro computing **A E S T H E T I C**. </description>
+    </item>
     <item>
       <title>NoCo Hackers 2023 CTF Walkthrough</title>
       <link>https://cyb3r.sh/2025-11-05-noco_hackers_2023_ctf_walkthrough.html</link>
