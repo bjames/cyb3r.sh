@@ -54,16 +54,21 @@ This is a good way to get a rough idea of how a given section will feel.
 It’s also a very painstaking process.</p>
 <p>Yesterday I spent about an hour guiding Claude Code to build a simple
 JavaScript page that automates this process. It has the following
-features: 1. Shareable links! I didn’t want to store any state on the
-server side, so this is done through a URL query parameter. We smooth
-(to 100-meter precision) and then base62 encode the GPX file provided.
-This obviously causes some details to get lost, but reduces even
-100-mile tracks to a <em>manageable</em> size. 2. Waypoint selectors! If
-your GPX track contains waypoints, you can select a start and finish
-waypoint and build your treadmill workout for that section. Many races
-provide GPX files with waypoints and if they are missing, they aren’t
-terribly difficult to add. 3. Graphical section selector using the
-course’s elevation profile! 4. Text and CSV output</p>
+features:</p>
+<ol type="1">
+<li>Shareable links! I didn’t want to store any state on the server
+side, so this is done through a URL query parameter. We smooth (to
+100-meter precision) and then base62 encode the GPX file provided. This
+obviously causes some details to get lost, but reduces even 100-mile
+tracks to a <em>manageable</em> size.</li>
+<li>Waypoint selectors! If your GPX track contains waypoints, you can
+select a start and finish waypoint and build your treadmill workout for
+that section. Many races provide GPX files with waypoints and if they
+are missing, they aren’t terribly difficult to add.</li>
+<li>Graphical section selector using the course’s elevation
+profile!</li>
+<li>Text and CSV output</li>
+</ol>
 <h1 id="handy-links">Handy Links</h1>
 <ul>
 <li><a

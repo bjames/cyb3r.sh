@@ -10,6 +10,7 @@ author: Brandon James
 Trail running is one of my hobbies. Even though I live on the west side of Fort Collins, CO and am near many great trails, I still use my treadmill a lot during training. While they are no replacement for an actual trail, they are a great tool for building fitness. Over the past few years, I developed the habit of taking sections of my races for the year and then mapping sections of these races to treadmill workouts. This is a good way to get a rough idea of how a given section will feel. It's also a very painstaking process. 
 
 Yesterday I spent about an hour guiding Claude Code to build a simple JavaScript page that automates this process. It has the following features:
+
 1. Shareable links! I didn't want to store any state on the server side, so this is done through a URL query parameter. We smooth (to 100-meter precision) and then base62 encode the GPX file provided. This obviously causes some details to get lost, but reduces even 100-mile tracks to a *manageable* size. 
 2. Waypoint selectors! If your GPX track contains waypoints, you can select a start and finish waypoint and build your treadmill workout for that section. Many races provide GPX files with waypoints and if they are missing, they aren't terribly difficult to add. 
 3. Graphical section selector using the course's elevation profile!
