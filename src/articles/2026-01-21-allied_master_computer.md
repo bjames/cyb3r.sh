@@ -2,8 +2,7 @@
 title: Allied Mastercomputer - Recreating a Sci-Fi Legend
 date: 2026-01-21
 tags:
-- Bash
-- Linux
+- Electronics
 author: Brandon James
 ---
 

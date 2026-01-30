@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 29 Jan 2026 20:42:21 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 29 Jan 2026 22:20:23 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>GPX to Treadmill</title>
+      <link>https://cyb3r.sh/2026-01-29-gpx_to_treadmill.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-01-29-gpx_to_treadmill.html</guid>
+      <pubDate>Thu, 29 Jan 2026 00:00:00 GMT</pubDate>
+      <description>Trail running is one of my hobbies. Even though I live on the west side of Fort Collins, CO and am near many great trails, I still use my treadmill a lot during training. While they are no replacement for an actual trail, they are a great tool for building fitness. Over the past few years, I developed the habit of taking sections of my races for the year and then mapping sections of these races to treadmill workouts. This is a good way to get a rough idea of how a given section will feel. It&apos;s also a very painstaking process. </description>
+    </item>
     <item>
       <title>Allied Mastercomputer - Recreating a Sci-Fi Legend</title>
       <link>https://cyb3r.sh/2026-01-21-allied_master_computer.html</link>
