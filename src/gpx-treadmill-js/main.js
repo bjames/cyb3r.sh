@@ -47,6 +47,7 @@
         profileSection: null,
         elevationCanvas: null,
         selectionInfo: null,
+        reverseCourseBtn: null,
         clearSelectionBtn: null,
         waypointSelector: null,
         waypointStartSelect: null,
@@ -114,6 +115,7 @@
         elements.profileSection = document.getElementById('profile-section');
         elements.elevationCanvas = document.getElementById('elevation-canvas');
         elements.selectionInfo = document.getElementById('selection-info');
+        elements.reverseCourseBtn = document.getElementById('reverse-course');
         elements.clearSelectionBtn = document.getElementById('clear-selection');
         elements.waypointSelector = document.getElementById('waypoint-selector');
         elements.waypointStartSelect = document.getElementById('waypoint-start');
@@ -162,6 +164,9 @@
         elements.minIncline.addEventListener('change', validateSettings);
         elements.maxIncline.addEventListener('change', validateSettings);
         elements.inclineStep.addEventListener('change', validateSettings);
+
+        // Reverse course
+        elements.reverseCourseBtn.addEventListener('click', handleReverseCourse);
 
         // Clear selection
         elements.clearSelectionBtn.addEventListener('click', handleClearSelection);
@@ -518,6 +523,31 @@
 
         updateSelectionInfo();
         updateStats();
+    }
+
+    /**
+     * Handles reverse course button click
+     */
+    function handleReverseCourse() {
+        if (!state.elevationData || state.elevationData.length < 2) return;
+
+        var points = state.elevationData;
+        var totalDist = points[points.length - 1].distance;
+        state.elevationData = points.map(function(p, i) {
+            return {
+                distance: totalDist - points[points.length - 1 - i].distance,
+                elevation: points[points.length - 1 - i].elevation
+            };
+        });
+
+        // Reset selection and re-render
+        state.selection = null;
+        ElevationProfile.clearSelection();
+        elements.clearSelectionBtn.style.display = 'none';
+        displayElevationProfile();
+        updateWaypointSelector();
+        updateStats();
+        updateSelectionInfo();
     }
 
     /**

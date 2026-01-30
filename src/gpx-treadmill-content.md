@@ -84,7 +84,10 @@ value="0.5" min="0.5" max="5" step="0.5">
 <canvas id="elevation-canvas" class="profile-container__canvas"></canvas>
 <div class="profile-info" id="profile-info">
 <span id="selection-info">Full route selected</span>
+<div class="profile-info__actions">
+<button type="button" id="reverse-course" class="btn btn--small btn--secondary">Reverse Course</button>
 <button type="button" id="clear-selection" class="btn btn--small btn--secondary" style="display: none;">Clear Selection</button>
+</div>
 </div>
 </div>
 <div class="waypoint-selector" id="waypoint-selector" style="display: none;">

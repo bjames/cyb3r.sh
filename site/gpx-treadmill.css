@@ -266,6 +266,11 @@
     color: var(--color-text-muted);
 }
 
+.profile-info__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
 /* Waypoint Selector */
 .waypoint-selector {
     margin-top: var(--spacing-md);
