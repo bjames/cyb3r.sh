@@ -199,9 +199,16 @@ id="stat-max-elev" class="stat__value">–</span></p>
 <ol start="4" type="1">
 <li>Generate Treadmill Plan
 </h2>
+<div class="generate-options">
 <button type="button" id="generate-btn" class="btn btn--primary btn--large">
 Generate Intervals
 </button>
+<p><label class="generate-option">
+<input type="checkbox" id="out-and-back"> <span>Out and Back</span>
+</label> <label class="generate-option">
+<input type="number" id="repeats" class="form-group__input generate-option__input" value="1" min="1" max="20" step="1">
+<span>Repeats</span> </label></p>
+</div>
 </section></li>
 </ol>
 <!-- Results -->

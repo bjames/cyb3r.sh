@@ -61,6 +61,8 @@
         // Generate
         generateSection: null,
         generateBtn: null,
+        outAndBackCheckbox: null,
+        repeatsInput: null,
 
         // Results
         resultsSection: null,
@@ -125,6 +127,8 @@
 
         elements.generateSection = document.getElementById('generate-section');
         elements.generateBtn = document.getElementById('generate-btn');
+        elements.outAndBackCheckbox = document.getElementById('out-and-back');
+        elements.repeatsInput = document.getElementById('repeats');
 
         elements.resultsSection = document.getElementById('results-section');
         elements.resultsSummary = document.getElementById('results-summary');
@@ -540,6 +544,45 @@
     }
 
     /**
+     * Prepares elevation data by applying out-and-back mirroring and repeats.
+     * Returns a new array with distances continuing from the end of the original.
+     * @param {Array<{distance: number, elevation: number}>} points - Elevation data points
+     * @param {boolean} outAndBack - Whether to mirror the route
+     * @param {number} repeats - Number of times to repeat the route
+     * @returns {Array<{distance: number, elevation: number}>} Prepared points
+     */
+    function prepareElevationData(points, outAndBack, repeats) {
+        // Work on a copy
+        var result = points.map(function(p) { return { distance: p.distance, elevation: p.elevation }; });
+
+        if (outAndBack) {
+            var totalDist = result[result.length - 1].distance - result[0].distance;
+            var baseDist = result[result.length - 1].distance;
+            for (var i = result.length - 2; i >= 0; i--) {
+                result.push({
+                    distance: baseDist + (totalDist - (result[i].distance - result[0].distance)),
+                    elevation: result[i].elevation
+                });
+            }
+        }
+
+        if (repeats > 1) {
+            var onePass = result.map(function(p) { return { distance: p.distance, elevation: p.elevation }; });
+            var passDist = onePass[onePass.length - 1].distance - onePass[0].distance;
+            for (var r = 1; r < repeats; r++) {
+                for (var j = 1; j < onePass.length; j++) {
+                    result.push({
+                        distance: onePass[j].distance - onePass[0].distance + passDist * r + onePass[0].distance,
+                        elevation: onePass[j].elevation
+                    });
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Handles generate button click
      */
     function handleGenerate() {
@@ -555,14 +598,20 @@
             inclineStep: parseFloat(elements.inclineStep.value)
         };
 
-        // Add selection if present
-        if (state.selection) {
-            options.startIndex = state.selection.startIndex;
-            options.endIndex = state.selection.endIndex;
-        }
+        // Slice the selected portion first
+        var startIndex = state.selection ? state.selection.startIndex : 0;
+        var endIndex = state.selection ? state.selection.endIndex : state.elevationData.length - 1;
+        var selectedPoints = state.elevationData.slice(startIndex, endIndex + 1);
+
+        // Apply out-and-back and repeats
+        var outAndBack = elements.outAndBackCheckbox.checked;
+        var repeats = parseInt(elements.repeatsInput.value, 10) || 1;
+        if (repeats < 1) repeats = 1;
+
+        var preparedPoints = prepareElevationData(selectedPoints, outAndBack, repeats);
 
         try {
-            state.intervals = IntervalCalculator.calculate(state.elevationData, options);
+            state.intervals = IntervalCalculator.calculate(preparedPoints, options);
 
             TableRenderer.render(state.intervals);
             elements.resultsSection.classList.remove('section--disabled');

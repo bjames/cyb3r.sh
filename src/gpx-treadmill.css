@@ -444,6 +444,28 @@
     font-size: 1.125rem;
 }
 
+/* Generate Options */
+.generate-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.generate-option {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.generate-option__input {
+    width: 4em;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+}
+
 /* Results */
 .results-summary {
     background-color: var(--color-background);

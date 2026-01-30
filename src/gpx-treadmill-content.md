@@ -134,7 +134,17 @@ value="0.5" min="0.5" max="5" step="0.5">
 <!-- Step 4: Generate Results -->
 <section class="section section--disabled" id="generate-section">
 <h2 class="section__title">4. Generate Treadmill Plan</h2>
+<div class="generate-options">
 <button type="button" id="generate-btn" class="btn btn--primary btn--large">Generate Intervals</button>
+<label class="generate-option">
+<input type="checkbox" id="out-and-back">
+<span>Out and Back</span>
+</label>
+<label class="generate-option">
+<input type="number" id="repeats" class="form-group__input generate-option__input" value="1" min="1" max="20" step="1">
+<span>Repeats</span>
+</label>
+</div>
 </section>
 
 <!-- Results -->
