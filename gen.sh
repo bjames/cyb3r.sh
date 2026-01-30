@@ -59,3 +59,20 @@ else
     echo "Generating 404 page..."
     pandoc src/404.md -o site/404.html --standalone --css style.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
 fi
+
+if [ src/tools.md -ot site/tools.html ]; then
+    echo "Tools page has not been modified since last generation, skipping..."
+else
+    echo "Generating tools page..."
+    pandoc src/tools.md -o site/tools.html --standalone --css style.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
+fi
+
+if [ src/gpx-treadmill-content.md -ot site/gpx-treadmill.html ]; then
+    echo "GPX treadmill page has not been modified since last generation, skipping..."
+else
+    echo "Generating GPX treadmill page..."
+    pandoc src/gpx-treadmill-content.md -o site/gpx-treadmill.html --standalone --css style.css --css gpx-treadmill.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
+fi
+
+cp -u src/gpx-treadmill.css site/gpx-treadmill.css
+mkdir -p site/gpx-treadmill-js && cp -au src/gpx-treadmill-js/. site/gpx-treadmill-js/
