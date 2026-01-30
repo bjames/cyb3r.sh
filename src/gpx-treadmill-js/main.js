@@ -174,6 +174,11 @@
         // Waypoint selection
         elements.waypointApplyBtn.addEventListener('click', handleWaypointSelection);
 
+        // Out and back toggle
+        elements.outAndBackCheckbox.addEventListener('click', function() {
+            elements.outAndBackCheckbox.classList.toggle('toggle-btn--active');
+        });
+
         // Generate
         elements.generateBtn.addEventListener('click', handleGenerate);
 
@@ -634,7 +639,7 @@
         var selectedPoints = state.elevationData.slice(startIndex, endIndex + 1);
 
         // Apply out-and-back and repeats
-        var outAndBack = elements.outAndBackCheckbox.checked;
+        var outAndBack = elements.outAndBackCheckbox.classList.contains('toggle-btn--active');
         var repeats = parseInt(elements.repeatsInput.value, 10) || 1;
         if (repeats < 1) repeats = 1;
 
