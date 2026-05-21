@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2026-06-20" />
+  <title>Intro to Modern Cryptography</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="alternate" type="application/rss+xml" title="cyb3r.sh RSS Feed" href="https://cyb3r.sh/rss.xml">
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+	<a href="tools.html">tools</a>
+	<a href="https://dash.cyb3r.sh/dashboard/week">dash</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">Intro to Modern Cryptography</h1>
+<p class="author">Brandon James</p>
+<p class="date">2026-06-20</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#symmetric-encryption"
+id="toc-symmetric-encryption">Symmetric Encryption</a>
+<ul>
+<li><a href="#feistel-networks" id="toc-feistel-networks">Feistel
+Networks</a></li>
+<li><a href="#symmetric-encryption-in-practice"
+id="toc-symmetric-encryption-in-practice">Symmetric Encryption in
+Practice</a></li>
+</ul></li>
+<li><a href="#the-key-distribution-problem"
+id="toc-the-key-distribution-problem">The Key Distribution
+Problem</a></li>
+<li><a href="#diffie-hellman-key-exchange"
+id="toc-diffie-hellman-key-exchange">Diffie-Hellman Key
+Exchange</a></li>
+<li><a href="#number-theory-notes---why-this-works"
+id="toc-number-theory-notes---why-this-works">Number Theory Notes - Why
+This Works</a>
+<ul>
+<li><a href="#modular-arithmetic" id="toc-modular-arithmetic">Modular
+Arithmetic</a></li>
+<li><a href="#primitive-roots" id="toc-primitive-roots">Primitive
+Roots</a></li>
+<li><a href="#the-scale-of-the-problem"
+id="toc-the-scale-of-the-problem">The Scale of the Problem</a></li>
+<li><a href="#interactive-diffie-hellman"
+id="toc-interactive-diffie-hellman">Interactive Diffie-Hellman</a></li>
+</ul></li>
+<li><a href="#rsa" id="toc-rsa">RSA</a>
+<ul>
+<li><a href="#key-generation" id="toc-key-generation">Key
+Generation</a></li>
+<li><a href="#rsa-encryption" id="toc-rsa-encryption">RSA
+Encryption</a></li>
+<li><a href="#rsa-signing" id="toc-rsa-signing">RSA Signing</a></li>
+<li><a href="#why-rsa-works" id="toc-why-rsa-works">Why RSA
+Works</a></li>
+</ul></li>
+<li><a href="#hashing" id="toc-hashing">Hashing</a></li>
+<li><a href="#certificates" id="toc-certificates">Certificates</a>
+<ul>
+<li><a href="#anatomy-of-a-certificate"
+id="toc-anatomy-of-a-certificate">Anatomy of a Certificate</a></li>
+<li><a href="#ensuring-integrity" id="toc-ensuring-integrity">Ensuring
+Integrity</a></li>
+</ul></li>
+<li><a href="#putting-it-all-together"
+id="toc-putting-it-all-together">Putting It All Together</a>
+<ul>
+<li><a href="#step-1-create-a-root-ca"
+id="toc-step-1-create-a-root-ca">Step 1: Create a Root CA</a></li>
+<li><a href="#step-2-create-an-intermediate-ca"
+id="toc-step-2-create-an-intermediate-ca">Step 2: Create an Intermediate
+CA</a></li>
+<li><a href="#step-3-create-a-server-certificate"
+id="toc-step-3-create-a-server-certificate">Step 3: Create a Server
+Certificate</a></li>
+<li><a href="#step-4-verify-the-chain"
+id="toc-step-4-verify-the-chain">Step 4: Verify the Chain</a></li>
+</ul></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+</ul>
+</nav>
+<p>This post is an expanded version of a talk I gave at <a
+href="https://nocohackers.com/">NoCo Hackers</a> in August 2025. The
+goal is to provide:</p>
+<ol type="1">
+<li>A basic overview of how modern cryptography works</li>
+<li>Intuition for the math behind RSA</li>
+<li>Working knowledge of how cryptographic protocols are used today</li>
+<li>Basic knowledge about what TLS certificates are and how certificate
+chaining works</li>
+</ol>
+<p>Many details will be left out in order to focus on broader concepts
+and the examples I use are “classic” concepts like RSA and DES as
+opposed to more recent innovations like ECDSA and AES. I also completely
+ignore post-quantum cryptography. I am not a cryptographer, but I apply
+many of these concepts in my day to day.</p>
+<p>Each section includes hands-on exercises you can follow along with
+using standard linux utilities like <code>openssl</code>.</p>
+<details>
+<summary>
+Some exercises look like this. Click to expand.
+</summary>
+<p>Click again to collapse.</p>
+</details>
+<h1 id="symmetric-encryption">Symmetric Encryption</h1>
+<p>Symmetric encryption uses a single key for both encryption and
+decryption. The implementation can vary quite a bit, but common
+algorithms include 3DES, Blowfish, AES and ChaCha20. If you work in
+tech, you’ve likely heard of some of these. Since you’re on my website,
+you either used ChaCha20 or AES to load this page<a href="#fn1"
+class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>.</p>
+<p>While the concept sounds similar to substitution ciphers<a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> many of us used on the playground as
+kids, substitution ciphers are vulnerable to techniques like <a
+href="https://en.wikipedia.org/wiki/Frequency_analysis">frequency
+analysis</a> and <a
+href="https://en.wikipedia.org/wiki/Known-plaintext_attack">known
+plaintext</a> attacks. Modern symmetric encryption prevents these
+methods from working by scrambling the output in addition to performing
+substitution.</p>
+<p>Just how secure are these algorithms? Using today’s technology,
+128-bit AES would take more than the current age of the universe to
+crack<a href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a>. 256-bit AES is likely quantum safe,
+assuming no new quantum algorithms produce speed-ups beyond that of
+Grover’s algorithm<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>. They are quite good, assuming you
+can securely manage your keys.</p>
+<h2 id="feistel-networks">Feistel Networks</h2>
+<p>Symmetric block ciphers such as DES and Blowfish are built on a
+structure called a Feistel network. An input block is split into left
+and right halves, and a round function <em>F</em> is applied repeatedly
+with different subkeys derived from the main key. Each round mixes the
+data further, and after enough rounds, the output is effectively
+indistinguishable from random noise.</p>
+<figure>
+<img src="media/crypto_feistel.png" title="Feistel Network"
+alt="Feistel network diagram" />
+<figcaption aria-hidden="true">Feistel network diagram</figcaption>
+</figure>
+<p>In the DES round function, the right half of the block is XORed with
+a subkey, then passed through S-boxes that substitute chunks of bits
+(providing confusion - obscuring the relationship between key and
+ciphertext), followed by a permutation that rearranges the bit positions
+(providing diffusion - spreading each input bit’s influence across the
+output).</p>
+<figure>
+<img src="media/crypto_des_inner_function.png"
+title="DES Inner Function"
+alt="DES inner function showing the s-boxes and bitwise permutation" />
+<figcaption aria-hidden="true">DES inner function showing the s-boxes
+and bitwise permutation</figcaption>
+</figure>
+<p>Not all block ciphers are built on Feistel networks. For instance <a
+href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">AES</a>
+uses a much different architecture featuring a substitution-permutation
+network. The underlying idea is still the same. Take a block,
+substitute, permute and repeat.</p>
+<h2 id="symmetric-encryption-in-practice">Symmetric Encryption in
+Practice</h2>
+<p>In practice, Alice and Bob share a secret key. When Alice wants to
+send a message, she encrypts it with the shared key. The ciphertext
+travels across the network where Eve can see it, but without the key,
+it’s just gibberish. Bob decrypts it with his copy of the same key.</p>
+<figure>
+<img src="media/crypto_symmetric.png" title="Symmetric Encryption"
+alt="Alice and Bob communicating with symmetric encryption while Eve observes the ciphertext" />
+<figcaption aria-hidden="true">Alice and Bob communicating with
+symmetric encryption while Eve observes the ciphertext</figcaption>
+</figure>
+<details>
+<summary>
+Exercise: Symmetric Encryption with GPG
+</summary>
+<p>Let’s encrypt and decrypt a file using GPG with AES-256. First,
+create a file to encrypt:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ echo &quot;In the realm of cryptographic lore,
+Live three souls we all adore,
+Alice sends her secrets bright,
+Bob receives them in the night.&quot; &gt; poem.txt</code></pre>
+<p>Encrypt the file with AES-256. You’ll be prompted for a
+passphrase:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ gpg --output poem.txt.enc --symmetric --cipher-algo AES256 poem.txt</code></pre>
+<p>Take a look at the encrypted file - it’s unreadable:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ more poem.txt.enc
+c^L)poO^LM&quot;6!=U,(o_WoMYG\uibz/?sg[ö_B21&#39;OH_7|#@?)D2</code></pre>
+<p>We can verify it’s actually AES-256 encrypted data:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ file poem.txt.enc
+poem.txt.enc: PGP symmetric key encrypted data - AES with 256-bit key salted &amp; iterated - SHA512 .</code></pre>
+<p>Now decrypt it into a new file and verify the contents match:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ gpg --output poem2.txt --decrypt poem.txt.enc
+gpg: AES256.CFB encrypted data
+gpg: encrypted with 1 passphrase
+┌─(you@workshop)-[~/tls_workshop]
+└─$ sha256sum poem.txt poem2.txt
+421fa5b43f8cf383c66966c033343adc9c4cbba4119664d8c552713e806e7476  poem.txt
+421fa5b43f8cf383c66966c033343adc9c4cbba4119664d8c552713e806e7476  poem2.txt</code></pre>
+<p>The SHA-256 hashes match - the decrypted file is identical to the
+original.</p>
+</details>
+<h1 id="the-key-distribution-problem">The Key Distribution Problem</h1>
+<p>There’s a fundamental issue with symmetric encryption: how do Alice
+and Bob agree on a shared key in the first place? If they can meet in
+person and exchange a key, great. But what if they’re on opposite sides
+of the internet and have never communicated before?</p>
+<figure>
+<img src="media/crypto_key_distribution.png"
+title="The Key Distribution Problem"
+alt="Alice handing Bob a pre-shared key while Eve watches from afar" />
+<figcaption aria-hidden="true">Alice handing Bob a pre-shared key while
+Eve watches from afar</figcaption>
+</figure>
+<p>They can’t just send the key over the network in plaintext - Eve
+would intercept it. They need a way to agree on a shared secret over an
+insecure channel. Enter Diffie-Hellman.</p>
+<h1 id="diffie-hellman-key-exchange">Diffie-Hellman Key Exchange</h1>
+<p>Diffie-Hellman allows two parties to establish a shared secret over
+an insecure channel. Here’s how it works:</p>
+<ol type="1">
+<li>Alice and Bob agree on two public parameters: a large prime
+<em>p</em> and a generator <em>g</em></li>
+<li>Alice picks a secret number <em>a</em> and computes <em>A =
+g<sup>a</sup> mod p</em></li>
+<li>Bob picks a secret number <em>b</em> and computes <em>B =
+g<sup>b</sup> mod p</em></li>
+<li>They exchange <em>A</em> and <em>B</em> publicly</li>
+<li>Alice computes the shared secret: <em>s = B<sup>a</sup> mod
+p</em></li>
+<li>Bob computes the shared secret: <em>s = A<sup>b</sup> mod
+p</em></li>
+<li>Both arrive at the same value of <em>s</em></li>
+</ol>
+<figure>
+<img src="media/crypto_diffie_hellman.png"
+title="Diffie-Hellman Key Exchange"
+alt="Diffie-Hellman key exchange between Alice and Bob, with Eve unable to derive the shared secret" />
+<figcaption aria-hidden="true">Diffie-Hellman key exchange between Alice
+and Bob, with Eve unable to derive the shared secret</figcaption>
+</figure>
+<p>A small example: with <em>p</em> = 23 and <em>g</em> = 5, if Alice
+picks <em>a</em> = 4 and Bob picks <em>b</em> = 3:</p>
+<ul>
+<li>Alice computes <em>A</em> = 5<sup>4</sup> mod 23 = 4</li>
+<li>Bob computes <em>B</em> = 5<sup>3</sup> mod 23 = 10</li>
+<li>Alice computes <em>s</em> = 10<sup>4</sup> mod 23 = 18</li>
+<li>Bob computes <em>s</em> = 4<sup>3</sup> mod 23 = 18</li>
+</ul>
+<p>Both arrive at 18 without ever transmitting their secret values. Eve
+sees <em>p</em>, <em>g</em>, <em>A</em> and <em>B</em>, but cannot
+efficiently compute <em>s</em>.</p>
+<p>Some important notes on parameter selection: <em>p</em> must be a
+prime number (2048-bit is the current best practice). <em>g</em> should
+be a primitive root of <em>p</em> (aka a generator). The choice of
+<em>a</em> and <em>b</em> are less important, but there are “weak” keys
+that should be avoided.</p>
+<details>
+<summary>
+Exercise: Generate DH Parameters
+</summary>
+<p>Use OpenSSL to generate Diffie-Hellman parameters. This will take a
+moment as it needs to find a suitable large prime:</p>
+<pre><code>┌─(you@workshop)-[~]
+└─$ openssl genpkey -algorithm dh -genparam -text</code></pre>
+<p>This outputs the DH parameters including the prime <em>p</em> and
+generator <em>g</em>. In practice, these parameters are negotiated as
+part of the TLS handshake.</p>
+</details>
+<h1 id="number-theory-notes---why-this-works">Number Theory Notes - Why
+This Works</h1>
+<p>Diffie-Hellman works due to the Discrete Logarithm Problem:</p>
+<ul>
+<li>Given <em>g<sup>k</sup> ≡ a (mod p)</em>, where you know <em>g</em>,
+<em>a</em>, and <em>p</em>, find <em>k</em>.</li>
+<li>When <em>p</em> is a 2048-bit prime number and <em>g</em> is a
+primitive root, this is currently out of the reach of even nation state
+actors.</li>
+</ul>
+<h2 id="modular-arithmetic">Modular Arithmetic</h2>
+<p>Modular arithmetic <em>is not</em> intuitive. A few examples:</p>
+<ul>
+<li>7 mod 5 = 2, 17 mod 5 = 2, and 22 mod 5 = 2
+<ul>
+<li>7 ÷ 5 = 1 remainder <strong>2</strong>, 17 ÷ 5 = 3 remainder
+<strong>2</strong>, and 22 ÷ 5 = 4 remainder <strong>2</strong></li>
+</ul></li>
+<li>In terms of modular arithmetic, we describe congruence relations
+<em>a ≡ b (mod m)</em> as follows:
+<ul>
+<li>7 ≡ 17 (mod 5) or 17 ≡ 22 (mod 5) because 7, 17 and 22 all equal 2
+in terms of mod 5</li>
+</ul></li>
+</ul>
+<p>Try it yourself:</p>
+<style>
+.crypto-widget {
+    background: var(--border-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;
+    padding: 1em;
+    margin: 1em 0;
+}
+.crypto-widget label {
+    margin-right: 1em;
+}
+.crypto-widget input[type="number"] {
+    width: 5em;
+    padding: 0.3em;
+    background: var(--background-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 1em;
+}
+.crypto-widget .widget-result {
+    font-family: monospace;
+    font-weight: bold;
+    display: block;
+    margin-top: 0.4em;
+}
+</style>
+<div id="mod-calc" class="crypto-widget">
+<div class="widget-row">
+<p><label>a =
+<input type="number" id="mod-a" value="22" min="0"></label> <label>b =
+<input type="number" id="mod-b" value="7" min="0"></label> <label>mod
+<input type="number" id="mod-m" value="5" min="1" max="60"></label></p>
+</div>
+<div id="mod-result-single" class="widget-result"
+style="margin-top: 0.5em;">
+
+</div>
+<div id="mod-result-congruence" class="widget-result">
+
+</div>
+</div>
+<script>
+(function() {
+    var modA = document.getElementById('mod-a');
+    var modB = document.getElementById('mod-b');
+    var modM = document.getElementById('mod-m');
+    var resultSingle = document.getElementById('mod-result-single');
+    var resultCongruence = document.getElementById('mod-result-congruence');
+
+    function update() {
+        var a = parseInt(modA.value);
+        var b = parseInt(modB.value);
+        var m = parseInt(modM.value);
+        if (isNaN(a) || isNaN(b) || isNaN(m) || m < 1) {
+            resultSingle.textContent = '';
+            resultCongruence.textContent = '';
+            return;
+        }
+        var aMod = ((a % m) + m) % m;
+        var bMod = ((b % m) + m) % m;
+        resultSingle.textContent = a + ' mod ' + m + ' = ' + aMod + ',  ' + b + ' mod ' + m + ' = ' + bMod;
+        if (aMod === bMod) {
+            resultCongruence.textContent = a + ' \u2261 ' + b + ' (mod ' + m + ')  \u2714 both land on ' + aMod;
+            resultCongruence.style.color = '#50fa7b';
+        } else {
+            resultCongruence.textContent = a + ' \u2262 ' + b + ' (mod ' + m + ')  \u2718  ' + aMod + ' \u2260 ' + bMod;
+            resultCongruence.style.color = '#ff5555';
+        }
+    }
+
+    modA.addEventListener('input', update);
+    modB.addEventListener('input', update);
+    modM.addEventListener('input', update);
+    update();
+})();
+</script>
+<h2 id="primitive-roots">Primitive Roots</h2>
+<p>The selection of <em>g</em> is important. <em>g</em> is a primitive
+root modulo <em>n</em> if for every integer <em>a</em> coprime to
+<em>n</em>, there is some integer <em>k</em> for which <em>g<sup>k</sup>
+≡ a (mod p)</em>. While this is complicated to the point of nonsense
+without defining multiple terms, these numbers have an interesting
+property:</p>
+<ul>
+<li>2<sup>0</sup> mod 11 = <strong>1</strong>, 2<sup>1</sup> mod 11 =
+<strong>2</strong>, 2<sup>2</sup> mod 11 = <strong>4</strong>,
+2<sup>3</sup> mod 11 = <strong>8</strong>, 2<sup>4</sup> mod 11 =
+<strong>5</strong>, 2<sup>5</sup> mod 11 = <strong>10</strong>,
+2<sup>6</sup> mod 11 = <strong>9</strong>, 2<sup>7</sup> mod 11 =
+<strong>7</strong>, 2<sup>8</sup> mod 11 = <strong>3</strong>,
+2<sup>9</sup> mod 11 = <strong>6</strong></li>
+<li><em>g<sup>k</sup></em> mod <em>p</em> can result in <em>any</em> of
+the remainders and there is no predictable pattern for the order this
+happens in</li>
+</ul>
+<p>Explore this yourself. Try <em>g</em> = 2, <em>p</em> = 11 (a
+primitive root), then try <em>g</em> = 3, <em>p</em> = 11 (not a
+primitive root) and notice how 3 fails to produce all remainders:</p>
+<div id="primroot-explorer" class="crypto-widget">
+<div class="widget-row">
+<p><label>g = <input type="number" id="pr-g" value="3" min="1"></label>
+<label>p =
+<input type="number" id="pr-p" value="23" min="2" max="53"></label></p>
+</div>
+<div id="pr-verdict" class="widget-result" style="margin-top: 0.5em;">
+
+</div>
+<div style="margin-top: 0.5em; overflow-x: auto;">
+<canvas id="pr-heatmap" width="600" height="300" style="display: block; width: 100%; max-width: 600px;">
+</canvas>
+</div>
+<div
+style="margin-top: 0.4em; font-size: 0.85em; font-family: monospace; color: var(--text-color); opacity: 0.7;">
+<p>Rows = k (exponent), Columns = remainders 1 to p-1. A lit cell means
+g<sup>k</sup> mod p equals that remainder. Primitive roots light every
+column.</p>
+</div>
+</div>
+<script>
+(function() {
+    var gInput = document.getElementById('pr-g');
+    var pInput = document.getElementById('pr-p');
+    var verdict = document.getElementById('pr-verdict');
+    var canvas = document.getElementById('pr-heatmap');
+    var ctx = canvas.getContext('2d');
+
+    function isDark() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function modpow(base, exp, mod) {
+        var result = 1;
+        base = ((base % mod) + mod) % mod;
+        while (exp > 0) {
+            if (exp % 2 === 1) result = (result * base) % mod;
+            exp = Math.floor(exp / 2);
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    function update() {
+        var g = parseInt(gInput.value);
+        var p = parseInt(pInput.value);
+        if (isNaN(g) || isNaN(p) || p < 2 || g < 1 || p > 53) {
+            verdict.textContent = 'p must be between 2 and 53';
+            verdict.style.color = '';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
+
+        var dark = isDark();
+        var numK = p - 1;
+        var numR = p - 1;
+
+        // compute all g^k mod p values
+        var results = [];
+        var seen = new Set();
+        for (var k = 0; k < numK; k++) {
+            var val = modpow(g, k, p);
+            results.push(val);
+            seen.add(val);
+        }
+
+        // check primitive root
+        var missing = [];
+        for (var r = 1; r < p; r++) {
+            if (!seen.has(r)) missing.push(r);
+        }
+
+        if (missing.length === 0) {
+            verdict.textContent = g + ' IS a primitive root mod ' + p + ' \u2014 all ' + numR + ' remainders produced';
+            verdict.style.color = '#50fa7b';
+        } else {
+            verdict.textContent = g + ' is NOT a primitive root mod ' + p + ' \u2014 missing: ' + missing.join(', ');
+            verdict.style.color = '#ff5555';
+        }
+
+        // draw heatmap
+        var labelW = 30;
+        var labelH = 20;
+        var availW = canvas.width - labelW;
+        var availH = canvas.height - labelH;
+        var cellW = Math.floor(availW / numR);
+        var cellH = Math.max(2, Math.min(Math.floor(availH / numK), 20));
+
+        // resize canvas height to fit
+        canvas.height = labelH + cellH * numK + 10;
+        var bgColor = dark ? '#282a36' : '#ffffff';
+        var emptyColor = dark ? '#383a4a' : '#f0f0f0';
+        var hitColor = dark ? '#bd93f9' : '#6200ea';
+        var missColor = dark ? '#44475a' : '#e0e0e0';
+        var textColor = dark ? '#f8f8f2' : '#212121';
+        var dimText = dark ? '#6272a4' : '#9e9e9e';
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // column labels (remainders)
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (var c = 0; c < numR; c++) {
+            var remainder = c + 1;
+            ctx.fillStyle = seen.has(remainder) ? textColor : dimText;
+            ctx.fillText(remainder, labelW + c * cellW + cellW / 2, 0);
+        }
+
+        // rows
+        for (var k = 0; k < numK; k++) {
+            var val = results[k];
+            var y = labelH + k * cellH;
+
+            // row label
+            ctx.fillStyle = dimText;
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            if (numK <= 30 || k % Math.ceil(numK / 30) === 0) {
+                ctx.fillText(k, labelW - 4, y + cellH / 2);
+            }
+
+            // cells
+            for (var c = 0; c < numR; c++) {
+                var remainder = c + 1;
+                var x = labelW + c * cellW;
+
+                if (val === remainder) {
+                    ctx.fillStyle = hitColor;
+                } else {
+                    ctx.fillStyle = emptyColor;
+                }
+                ctx.fillRect(x, y, cellW - 1, cellH - 1);
+            }
+        }
+    }
+
+    gInput.addEventListener('input', update);
+    pInput.addEventListener('input', update);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', update);
+    update();
+})();
+</script>
+<h2 id="the-scale-of-the-problem">The Scale of the Problem</h2>
+<p>If <em>p</em> is a 2048-bit integer such as:</p>
+<pre><code>300396648896056517967822789849851342061039737840497444694298029812868780991612
+616546929927248598372661584089789602159266747365345985697362943273589428015143
+016773149946315701041271641014512529437108063589612811583585838245047403956855
+795246762650874918515999483338962432177317675184887766781763712231372305303916
+152762734067057282167451220484749501274315183531761085778634261192080104872288
+357240136773198003137851673885785239532397645643423686563947798011817173222358
+195851978881109660891980662046175013305288876827537293648722280166850584485979
+179022443434756151783609647880324673922252042888634076559224189862075342037</code></pre>
+<p>And <em>g</em> is a generator, there is no efficient way to solve for
+<em>k</em>.</p>
+<h2 id="interactive-diffie-hellman">Interactive Diffie-Hellman</h2>
+<p>Step through a Diffie-Hellman key exchange. Pick your parameters and
+secrets, then watch Alice and Bob arrive at the same shared secret while
+Eve is left in the dark.</p>
+<div id="dh-sim" class="crypto-widget">
+<div class="widget-row">
+<p><label>p (prime) =
+<input type="number" id="dh-p" value="23" min="2"></label> <label>g
+(generator) =
+<input type="number" id="dh-g" value="5" min="1"></label></p>
+</div>
+<div class="widget-row" style="margin-top: 0.5em;">
+<p><label>Alice’s secret a =
+<input type="number" id="dh-a" value="4" min="1"></label> <label>Bob’s
+secret b = <input type="number" id="dh-b" value="3" min="1"></label></p>
+</div>
+<div style="margin-top: 0.8em;">
+<button id="dh-step" style="padding: 0.4em 1.2em; background: var(--accent-color); color: var(--background-color); border: none; border-radius: 4px; cursor: pointer; font-size: 1em;">
+Next Step
+</button>
+<button id="dh-reset" style="padding: 0.4em 1.2em; background: var(--border-color); color: var(--text-color); border: none; border-radius: 4px; cursor: pointer; font-size: 1em; margin-left: 0.5em;">
+Reset
+</button>
+</div>
+<div id="dh-steps"
+style="margin-top: 1em; font-family: monospace; line-height: 1.8;">
+
+</div>
+<canvas id="dh-eve-canvas" width="600" height="0" style="display: none; width: 100%; max-width: 600px; margin-top: 1em;">
+</canvas>
+</div>
+<script>
+(function() {
+    var pInput = document.getElementById('dh-p');
+    var gInput = document.getElementById('dh-g');
+    var aInput = document.getElementById('dh-a');
+    var bInput = document.getElementById('dh-b');
+    var stepBtn = document.getElementById('dh-step');
+    var resetBtn = document.getElementById('dh-reset');
+    var stepsDiv = document.getElementById('dh-steps');
+    var eveCanvas = document.getElementById('dh-eve-canvas');
+    var eveCtx = eveCanvas.getContext('2d');
+    var currentStep = 0;
+
+    function isDark() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function modpow(base, exp, mod) {
+        if (mod === 1) return 0;
+        var result = 1;
+        base = ((base % mod) + mod) % mod;
+        while (exp > 0) {
+            if (exp % 2 === 1) result = (result * base) % mod;
+            exp = Math.floor(exp / 2);
+            base = (base * base) % mod;
+        }
+        return result;
+    }
+
+    function reset() {
+        currentStep = 0;
+        stepsDiv.innerHTML = '';
+        eveCanvas.style.display = 'none';
+        eveCanvas.height = 0;
+        stepBtn.disabled = false;
+    }
+
+    function addStep(html, color) {
+        var div = document.createElement('div');
+        div.innerHTML = html;
+        div.style.padding = '0.4em 0.6em';
+        div.style.marginBottom = '0.3em';
+        div.style.borderLeft = '3px solid ' + (color || 'var(--accent-color)');
+        div.style.background = 'var(--border-color)';
+        div.style.borderRadius = '0 4px 4px 0';
+        stepsDiv.appendChild(div);
+    }
+
+    function drawEveView(p, g, A, B, a, b, s) {
+        var dark = isDark();
+        eveCanvas.height = 220;
+        eveCanvas.style.display = 'block';
+        var w = eveCanvas.width, h = eveCanvas.height;
+        var ctx = eveCtx;
+
+        var bgColor = dark ? '#282a36' : '#ffffff';
+        var textColor = dark ? '#f8f8f2' : '#212121';
+        var dimColor = dark ? '#6272a4' : '#9e9e9e';
+        var greenColor = '#50fa7b';
+        var redColor = '#ff5555';
+        var lockColor = dark ? '#ff5555' : '#d32f2f';
+
+        ctx.clearRect(0, 0, w, h);
+
+        // title
+        ctx.font = 'bold 14px monospace';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText("What Eve sees vs. what she needs", w / 2, 20);
+
+        var colW = w / 2;
+        var startY = 45;
+        var rowH = 28;
+
+        // left column: what Eve knows (public)
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = greenColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('\u2714 Eve knows (public)', colW / 2, startY);
+
+        var knowns = [
+            'p = ' + p,
+            'g = ' + g,
+            'A = ' + A,
+            'B = ' + B
+        ];
+        ctx.font = '13px monospace';
+        ctx.fillStyle = textColor;
+        for (var i = 0; i < knowns.length; i++) {
+            ctx.fillText(knowns[i], colW / 2, startY + (i + 1) * rowH);
+        }
+
+        // right column: what Eve needs (secret)
+        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = redColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('\u2718 Eve needs (secret)', colW + colW / 2, startY);
+
+        var secrets = [
+            'a = ' + a,
+            'b = ' + b,
+            's = ' + s
+        ];
+        ctx.font = '13px monospace';
+        ctx.fillStyle = textColor;
+        for (var i = 0; i < secrets.length; i++) {
+            var y = startY + (i + 1) * rowH;
+            ctx.fillText(secrets[i], colW + colW / 2, y);
+            // draw lock icon
+            ctx.fillStyle = lockColor;
+            ctx.fillText(' \uD83D\uDD12', colW + colW / 2 + ctx.measureText(secrets[i]).width / 2 + 4, y);
+            ctx.fillStyle = textColor;
+        }
+
+        // divider
+        ctx.beginPath();
+        ctx.moveTo(colW, startY - 10);
+        ctx.lineTo(colW, startY + 4 * rowH + 10);
+        ctx.strokeStyle = dimColor;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // bottom note
+        ctx.font = '11px monospace';
+        ctx.fillStyle = dimColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('To find s, Eve must solve the discrete logarithm: find k where ' + g + '\u1D4F \u2261 ' + A + ' (mod ' + p + ')', w / 2, h - 10);
+    }
+
+    function step() {
+        var p = parseInt(pInput.value);
+        var g = parseInt(gInput.value);
+        var a = parseInt(aInput.value);
+        var b = parseInt(bInput.value);
+
+        if (isNaN(p) || isNaN(g) || isNaN(a) || isNaN(b)) return;
+
+        var A = modpow(g, a, p);
+        var B = modpow(g, b, p);
+        var sA = modpow(B, a, p);
+        var sB = modpow(A, b, p);
+
+        currentStep++;
+        switch(currentStep) {
+            case 1:
+                addStep('<strong>Public parameters:</strong> p = ' + p + ', g = ' + g + '<br><em>These are visible to everyone, including Eve.</em>');
+                break;
+            case 2:
+                addStep('<strong style="color: #ff5555;">Alice</strong> picks secret a = ' + a + ' and computes A = g<sup>a</sup> mod p = ' + g + '<sup>' + a + '</sup> mod ' + p + ' = <strong>' + A + '</strong>', '#ff5555');
+                break;
+            case 3:
+                addStep('<strong style="color: #8be9fd;">Bob</strong> picks secret b = ' + b + ' and computes B = g<sup>b</sup> mod p = ' + g + '<sup>' + b + '</sup> mod ' + p + ' = <strong>' + B + '</strong>', '#8be9fd');
+                break;
+            case 4:
+                addStep('<strong>Exchange:</strong> Alice sends A = ' + A + ' to Bob. Bob sends B = ' + B + ' to Alice.<br><em>Eve sees A = ' + A + ' and B = ' + B + ' but not a or b.</em>');
+                break;
+            case 5:
+                addStep('<strong style="color: #ff5555;">Alice</strong> computes s = B<sup>a</sup> mod p = ' + B + '<sup>' + a + '</sup> mod ' + p + ' = <strong>' + sA + '</strong>', '#ff5555');
+                break;
+            case 6:
+                addStep('<strong style="color: #8be9fd;">Bob</strong> computes s = A<sup>b</sup> mod p = ' + A + '<sup>' + b + '</sup> mod ' + p + ' = <strong>' + sB + '</strong>', '#8be9fd');
+                break;
+            case 7:
+                if (sA === sB) {
+                    addStep('<strong style="color: #50fa7b;">Shared secret: ' + sA + '</strong><br>Both arrived at the same value.', '#50fa7b');
+                    drawEveView(p, g, A, B, a, b, sA);
+                } else {
+                    addStep('<strong style="color: #ff5555;">Something went wrong: ' + sA + ' \u2260 ' + sB + '</strong>', '#ff5555');
+                }
+                stepBtn.disabled = true;
+                break;
+        }
+    }
+
+    stepBtn.addEventListener('click', step);
+    resetBtn.addEventListener('click', reset);
+    pInput.addEventListener('input', reset);
+    gInput.addEventListener('input', reset);
+    aInput.addEventListener('input', reset);
+    bInput.addEventListener('input', reset);
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (currentStep >= 7) {
+            var p = parseInt(pInput.value), g = parseInt(gInput.value);
+            var a = parseInt(aInput.value), b = parseInt(bInput.value);
+            var A = modpow(g, a, p), B = modpow(g, b, p);
+            var s = modpow(B, a, p);
+            drawEveView(p, g, A, B, a, b, s);
+        }
+    });
+})();
+</script>
+<h1 id="rsa">RSA</h1>
+<p>RSA is an asymmetric encryption algorithm. Unlike symmetric
+encryption, it uses a <em>pair</em> of keys: one public, one private.
+It’s named after Rivest, Shamir and Adleman who published it in 1977<a
+href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a>.</p>
+<h2 id="key-generation">Key Generation</h2>
+<p>The important parts:</p>
+<ol type="1">
+<li>Alice chooses two prime numbers <strong><em>p</em></strong> and
+<strong><em>q</em></strong></li>
+<li>She multiplies them together to yield
+<strong><em>N</em></strong></li>
+<li>She selects another number <strong><em>e</em></strong></li>
+<li>She finds <strong><em>d</em></strong> such that <em>e × d = 1 mod (p
+- 1)(q - 1)</em></li>
+</ol>
+<p><strong><em>e</em></strong> and <strong><em>N</em></strong> should be
+made publicly available. These make up the <strong>public
+key</strong>.</p>
+<p><strong><em>p</em></strong>, <strong><em>q</em></strong> and
+<strong><em>d</em></strong> should be kept private. These make up the
+<strong>private key</strong>.</p>
+<figure>
+<img src="media/crypto_rsa_keygen.png" title="RSA Key Generation"
+alt="RSA key generation with Alice sharing her public key" />
+<figcaption aria-hidden="true">RSA key generation with Alice sharing her
+public key</figcaption>
+</figure>
+<h2 id="rsa-encryption">RSA Encryption</h2>
+<p>Anyone can encrypt a message to Alice using her public key. Only
+Alice can decrypt it with her private key:</p>
+<ul>
+<li><strong>Encrypt</strong>: <em>ciphertext = Message<sup>e</sup> mod
+N</em></li>
+<li><strong>Decrypt</strong>: <em>Message = Ciphertext<sup>d</sup> mod
+N</em></li>
+</ul>
+<figure>
+<img src="media/crypto_rsa_encryption.png" title="RSA Encryption"
+alt="Bob encrypts a message with Alice’s public key, Alice decrypts with her private key" />
+<figcaption aria-hidden="true">Bob encrypts a message with Alice’s
+public key, Alice decrypts with her private key</figcaption>
+</figure>
+<h2 id="rsa-signing">RSA Signing</h2>
+<p>RSA can also provide authentication and integrity. Alice can
+<em>sign</em> a message with her private key, and anyone with her public
+key can verify the signature:</p>
+<ul>
+<li><strong>Sign</strong>: <em>signature = hash(message)<sup>d</sup> mod
+N</em></li>
+<li><strong>Verify</strong>: <em>hash(message) = signature<sup>e</sup>
+mod N</em></li>
+</ul>
+<figure>
+<img src="media/crypto_rsa_signing.png" title="RSA Signing"
+alt="Alice signs a message with her private key, Bob verifies with Alice’s public key" />
+<figcaption aria-hidden="true">Alice signs a message with her private
+key, Bob verifies with Alice’s public key</figcaption>
+</figure>
+<p>Notice that Eve can <em>see</em> the message (signing doesn’t encrypt
+it), but she can’t <em>forge</em> Alice’s signature without Alice’s
+private key. This gives Bob confidence the message actually came from
+Alice and hasn’t been tampered with.</p>
+<h2 id="why-rsa-works">Why RSA Works</h2>
+<p>RSA works because there is no known algorithm to efficiently find the
+prime factors of large composite numbers. When <em>N</em> is the product
+of two large primes (each 1024+ bits), factoring <em>N</em> to recover
+<em>p</em> and <em>q</em> is computationally infeasible with current
+technology.</p>
+<details>
+<summary>
+Exercise: RSA with OpenSSL
+</summary>
+<p>Generate a 2048-bit RSA key pair:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl genrsa -out private.pem 2048</code></pre>
+<p>Extract the public key:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl rsa -in private.pem -pubout -out public.pem
+writing RSA key</code></pre>
+<p>Encrypt a message with the public key:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ echo &quot;noco hackers&quot; | openssl pkeyutl -encrypt -pubin -inkey public.pem -out ciphertext.out</code></pre>
+<p>Examine the ciphertext - it’s binary garbage:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ xxd ciphertext.out | head -5
+00000000: 6722 383e 758a 0788 f0ec d4e8 dfd6 5a55  g&quot;8&gt;u.........ZU
+00000010: 1a47 3926 22bd ae79 952b 5719 9419 2b64  .G9&amp;&quot;..y.+W...+d
+00000020: bd1e a72b 8eb1 b8bb f816 ea55 d63a 747e  ...+.......U.:t~
+00000030: 2b00 c05b e245 140c 3023 63f4 0189 e522  +..[.E..0#c....&quot;
+00000040: 6fd4 c1ad ebf3 ee38 065d 626c b56a 6ad3  o......8.]bl.jj.</code></pre>
+<p>Decrypt it with the private key:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl pkeyutl -decrypt -inkey private.pem -in ciphertext.out
+noco hackers</code></pre>
+</details>
+<h1 id="hashing">Hashing</h1>
+<p>Hash algorithms should be:</p>
+<ul>
+<li><strong>One-way</strong> - you can’t reverse a hash to get the
+original input</li>
+<li><strong>Collision resistant</strong> - it should be computationally
+infeasible to find two inputs that produce the same hash</li>
+<li><strong>Consistent output size</strong> - regardless of input size,
+the hash is always the same length</li>
+<li><strong>Exhibit the avalanche effect</strong> - a small change in
+input produces a dramatically different hash</li>
+</ul>
+<p>Let’s see this in action. Notice how changing a single character
+(“hackess” vs “hackers”) completely changes the hash:</p>
+<pre><code>┌─(bjames@llpt03)-[~/tls_workshop]
+└─$ echo -n &quot;noco hackess&quot; | xxd -b
+00000000: 01101110 01101111 01100011 01101111 00100000 01101000  noco h
+00000006: 01100001 01100011 01101011 01100101 01110011 01110011  ackess
+┌─(bjames@llpt03)-[~/tls_workshop]
+└─$ echo -n &quot;noco hackers&quot; | xxd -b
+00000000: 01101110 01101111 01100011 01101111 00100000 01101000  noco h
+00000006: 01100001 01100011 01101011 01100101 01110010 01110011  ackers</code></pre>
+<p>Only a single bit differs between the two inputs (the <code>s</code>
+vs <code>r</code>), but the SHA-256 output is completely different:</p>
+<pre><code>┌─(bjames@llpt03)-[~/tls_workshop]
+└─$ echo &quot;noco hackers&quot; | sha256sum
+85a29cdad0e9979136366475928434e879fcdfd5f609d74d16852da053ced22c  -
+┌─(bjames@llpt03)-[~/tls_workshop]
+└─$ echo &quot;noco hackess&quot; | sha256sum
+517163d51822495d2fcb7f163c2449284a5ed52ae3dfb2fc1ed4c818535f7232  -</code></pre>
+<p>This is the avalanche effect in action.</p>
+<figure>
+<img src="media/crypto_merkle_damgard.png"
+title="Merkle-Damgård Construction"
+alt="Merkle-Damgård construction showing how blocks are chained through a compression function" />
+<figcaption aria-hidden="true">Merkle-Damgård construction showing how
+blocks are chained through a compression function</figcaption>
+</figure>
+<p>Many hash algorithms (including SHA-256) use the Merkle-Damgård
+construction. The message is broken into blocks, and each block is fed
+through a compression function <em>F</em> along with the output of the
+previous block. The first block uses an initialization vector (IV). This
+chaining ensures that every bit of the input affects the final hash.</p>
+<h1 id="certificates">Certificates</h1>
+<h2 id="anatomy-of-a-certificate">Anatomy of a Certificate</h2>
+<p>Cryptographic certificates are effectively:</p>
+<ol type="1">
+<li>A container for a device’s public key</li>
+<li>A collection of metadata (subject name, issuer, validity period,
+etc.)</li>
+<li>A signature from a trusted authority validating:
+<ol type="a">
+<li>The metadata</li>
+<li>That the identity actually belongs to whoever requested the
+certificate be signed</li>
+</ol></li>
+</ol>
+<figure>
+<img src="media/crypto_certificate.png" title="Anatomy of a Certificate"
+alt="Certificate anatomy showing subject, issuer, public key, and signature fields with certificate chain" />
+<figcaption aria-hidden="true">Certificate anatomy showing subject,
+issuer, public key, and signature fields with certificate
+chain</figcaption>
+</figure>
+<p>Typically certificates are chained. Intermediate and leaf
+certificates are exchanged during the TLS handshake, while root
+certificates are deployed via OS/web browser updates or via some other
+automated mechanism (Active Directory, devops tools, SCEP, etc).</p>
+<figure>
+<img src="media/crypto_cert_chain.png" title="Certificate Chain"
+alt="Certificate chain showing leaf cert signed by intermediate CA, signed by root CA" />
+<figcaption aria-hidden="true">Certificate chain showing leaf cert
+signed by intermediate CA, signed by root CA</figcaption>
+</figure>
+<h2 id="ensuring-integrity">Ensuring Integrity</h2>
+<p>When a Certificate Authority (CA) processes a certificate signing
+request (CSR), it takes the public key and metadata from the CSR, then
+adds in some metadata of its own. Once complete, the CA uses its private
+key to sign the contents of the certificate.</p>
+<p>The CA’s public key can then be used to validate that the certificate
+was A) signed by the CA in question and B) has not been tampered
+with.</p>
+<h1 id="putting-it-all-together">Putting It All Together</h1>
+<p>TLS and by extension x.509 combine symmetric encryption, asymmetric
+encryption, key exchange protocols and hash algorithms. Here’s what a
+real TLS cipher suite looks like, scanned from cyb3r.sh:</p>
+<pre><code>┌─(bjames@llpt03)-[~]
+└─$ nmap -sV --script ssl-enum-ciphers -p 443 cyb3r.sh
+Starting Nmap 7.92 ( https://nmap.org ) at 2025-08-21 10:36 MDT
+Nmap scan report for cyb3r.sh (165.227.88.41)
+Host is up (0.0080s latency).
+
+PORT    STATE SERVICE  VERSION
+443/tcp open  ssl/http nginx 1.20.1
+|_http-server-header: nginx/1.20.1
+| ssl-enum-ciphers:
+|   TLSv1.2:
+|     ciphers:
+|       TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 (secp256r1) - A
+|       TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (secp256r1) - A
+|       TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+|   TLSv1.3:
+|     ciphers:
+|       TLS_AKE_WITH_AES_128_CCM_SHA256 (secp256r1) - A
+|       TLS_AKE_WITH_AES_128_GCM_SHA256 (secp256r1) - A
+|       TLS_AKE_WITH_AES_256_GCM_SHA384 (secp256r1) - A
+|       TLS_AKE_WITH_CHACHA20_POLY1305_SHA256 (secp256r1) - A
+|_  least strength: A</code></pre>
+<p>Let’s break down
+<code>TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256</code>:</p>
+<ul>
+<li><strong>ECDHE</strong> (Elliptic-curve Diffie-Hellman Ephemeral) -
+the key exchange protocol</li>
+<li><strong>ECDSA</strong> (Elliptic-curve Digital Signature Algorithm)
+- the handshake authentication algorithm</li>
+<li><strong>AES-128-GCM</strong> (Advanced Encryption Standard 128-bit
+Galois/Counter Mode) - the symmetric algorithm used with the session
+key</li>
+<li><strong>SHA-256</strong> - the algorithm used to calculate message
+authentication codes (HMAC)</li>
+</ul>
+<p>Every concept from this post comes together in a single cipher suite
+name.</p>
+<details>
+<summary>
+Exercise: Build a Certificate Chain
+</summary>
+<p>In this exercise, we’ll create our own certificate authority, an
+intermediate CA, and a server certificate - the same chain of trust your
+browser validates every time you visit an HTTPS site.</p>
+<h3 id="step-1-create-a-root-ca">Step 1: Create a Root CA</h3>
+<p>Generate the root CA private key and self-signed certificate:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl req -x509 -newkey rsa:4096 -keyout root-key.pem -out root-cert.pem -days 365 \
+    -subj &quot;/CN=Workshop Root CA&quot; -nodes</code></pre>
+<h3 id="step-2-create-an-intermediate-ca">Step 2: Create an Intermediate
+CA</h3>
+<p>Generate the intermediate CA key and a certificate signing request
+(CSR):</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl req -newkey rsa:4096 -keyout intermediate-key.pem -out intermediate.csr \
+    -subj &quot;/CN=Workshop Intermediate CA&quot; -nodes</code></pre>
+<p>Sign the intermediate CSR with the root CA:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl x509 -req -in intermediate.csr -CA root-cert.pem -CAkey root-key.pem \
+    -CAcreateserial -out intermediate-cert.pem -days 180</code></pre>
+<h3 id="step-3-create-a-server-certificate">Step 3: Create a Server
+Certificate</h3>
+<p>Generate a server key and CSR:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl req -newkey rsa:2048 -keyout server-key.pem -out server.csr \
+    -subj &quot;/CN=workshop.local&quot; -nodes</code></pre>
+<p>Sign the server CSR with the intermediate CA:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl x509 -req -in server.csr -CA intermediate-cert.pem -CAkey intermediate-key.pem \
+    -CAcreateserial -out server-cert.pem -days 90</code></pre>
+<h3 id="step-4-verify-the-chain">Step 4: Verify the Chain</h3>
+<p>Now verify that the entire chain is valid:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl verify -CAfile root-cert.pem -untrusted intermediate-cert.pem server-cert.pem
+server-cert.pem: OK</code></pre>
+<p>You can also inspect any certificate in the chain:</p>
+<pre><code>┌─(you@workshop)-[~/tls_workshop]
+└─$ openssl x509 -in server-cert.pem -text -noout | head -15</code></pre>
+<p>This is fundamentally the same process that Let’s Encrypt, DigiCert
+and every other CA uses to issue certificates - just at a much larger
+scale with more rigorous identity verification.</p>
+</details>
+<h1 id="conclusion">Conclusion</h1>
+<p>We’ve covered symmetric encryption, key exchange, hashing, asymmetric
+encryption, and how they all come together in TLS. This post originated
+as a talk at <a href="https://nocohackers.com/">NoCo Hackers</a>, a
+meetup for anyone interested in technology, security and hacking in
+Northern Colorado. If you’re in the area, come hang out with us.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Unless my cipher suites have changed since the time of
+writing, you used either AES-128-GCM, AES-256-GCM or ChaCha20-Poly1305
+to load this page.<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
+href="https://cyberchef.io/#recipe=Substitute(&#39;ABCDEFGHIJKLMNOPQRSTUVWXYZ&#39;,&#39;XYZABCDEFGHIJKLMNOPQRSTUVW&#39;)&amp;input=SlVTVCBJTiBDQVNFIElUUyBOT1QgT0JWSU9VUyBGUk9NIFRIRSBOQU1FLCBUSElTIElTIEEgU1VCU0lUVVRJT04gQ0lQSEVS">GRPQ
+FK ZXPB FQP KLQ LYSFLRP COLJ QEB KXJB, QEFP FP X PRYPFQRQFLK
+ZFMEBO</a><a href="#fnref2" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a
+href="https://crypto.stackexchange.com/questions/48667/how-long-would-it-take-to-brute-force-an-aes-128-key">Stack
+exchange</a> is a reliable source right?<a href="#fnref3"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Seriously, do I cite anything other than <a
+href="https://crypto.stackexchange.com/questions/6712/is-aes-256-a-post-quantum-secure-cipher-or-not">stack
+exchange</a>?<a href="#fnref4" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>The algorithm was independently discovered by Clifford
+Cocks at GCHQ in 1973, but was classified until 1997.<a href="#fnref5"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a> <a href="rss.xml">rss</a>
+    </p>
+</div>
+</body>
+</html>

@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 29 Jan 2026 22:49:09 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 20 May 2026 21:00:25 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>Intro to Modern Cryptography</title>
+      <link>https://cyb3r.sh/2026-05-20-intro_to_modern_cryptography.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-05-20-intro_to_modern_cryptography.html</guid>
+      <pubDate>Sat, 20 Jun 2026 00:00:00 GMT</pubDate>
+      <description>This post is an expanded version of a talk I gave at [NoCo Hackers](https://nocohackers.com/) in August 2025. The goal is to provide:</description>
+    </item>
     <item>
       <title>GPX to Treadmill</title>
       <link>https://cyb3r.sh/2026-01-29-gpx_to_treadmill.html</link>
