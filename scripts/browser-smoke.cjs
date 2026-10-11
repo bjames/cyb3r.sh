@@ -80,6 +80,25 @@ const server = http.createServer((req, res) => {
   await page.setViewportSize({width:390,height:844});
   assert(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth));
   await page.screenshot({path:path.join(require('os').tmpdir(),'freeeme-mobile.png'),fullPage:true});
+  await page.addInitScript(() => { window.createImageBitmap = undefined; });
+  await page.reload();
+  const phonePhoto = await page.evaluate(() => {
+    const c = document.createElement('canvas'); c.width = 4032; c.height = 3024;
+    const x = c.getContext('2d'); x.fillStyle = '#6699bb'; x.fillRect(0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg').split(',')[1];
+  });
+  await page.locator('#file').setInputFiles({name:'phone-photo.jpg',mimeType:'',buffer:Buffer.from(phonePhoto,'base64')});
+  await page.waitForFunction(() => document.querySelector('#canvas').width === 2048 && !document.querySelector('#save').disabled);
+  assert.equal(await page.locator('#canvas').evaluate(c => c.height), 1536);
+  const mobilePreview = await page.locator('#canvas').boundingBox();
+  assert(mobilePreview.width > 0 && mobilePreview.height > 0 && mobilePreview.width < 390);
+  assert(await page.locator('#status').isVisible());
+  const [phoneDownload] = await Promise.all([page.waitForEvent('download'),page.locator('#save').click()]);
+  assert.equal(fs.readFileSync(await phoneDownload.path()).subarray(1,4).toString(), 'PNG');
+  await page.locator('#file').setInputFiles({name:'broken.png',mimeType:'image/png',buffer:Buffer.from('broken image')});
+  await page.waitForFunction(() => document.querySelector('#status').textContent.includes('could not be decoded'));
+  assert(await page.locator('#status').isVisible());
+  assert.equal(await page.locator('#save').isDisabled(), false); // Previous image remains usable.
   await page.setViewportSize({width:1280,height:1000});
   // Exercise GIF decoding and animated export with two generated local frames.
   const {GIFEncoder,quantize,applyPalette}=require(root+'/src/tools/freeeme/app/node_modules/gifenc');
@@ -105,6 +124,6 @@ const server = http.createServer((req, res) => {
   await page.goto(sharedLink);
   await page.waitForFunction(()=>document.querySelector('#upload-status').textContent.includes('Shared'));
   assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(missing.length,0,JSON.stringify(missing));
-  console.log('PASS: shared navigation and consistent width at four breakpoints, PNG upload/export, caption drag/resize/keyboard, additional captions and removal, light/dark theme, mobile layout, animated GIF round-trip, GPX upload and shared-route URL; no browser errors or missing assets.');
+  console.log('PASS: shared navigation and consistent width at four breakpoints, PNG upload/export, caption drag/resize/keyboard, additional captions and removal, light/dark theme, mobile large-photo upload/export without createImageBitmap, visible decode errors, animated GIF round-trip, GPX upload and shared-route URL; no browser errors or missing assets.');
   await browser.close();server.close();
 })().catch(e=>{console.error(e);server.close();process.exit(1)});

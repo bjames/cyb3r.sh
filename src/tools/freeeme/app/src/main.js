@@ -103,13 +103,14 @@ function syncBoxes() {
   }
 }
 syncBoxes();
-function status(message) {
+function status(message, visible = false) {
   let liveStatus = $('status');
   if (!liveStatus) {
     liveStatus = document.createElement('p'); liveStatus.id = 'status';
     liveStatus.className = 'visually-hidden'; liveStatus.setAttribute('role', 'status');
     liveStatus.setAttribute('aria-live', 'polite'); $('save').after(liveStatus);
   }
+  liveStatus.classList.toggle('visually-hidden', !visible);
   liveStatus.textContent = message;
 }
 function wrap(text, maxWidth) {
@@ -167,6 +168,25 @@ function play() {
   if (animated && !busy) timer = setTimeout(() => { frameIndex = (frameIndex + 1) % frames.length; play(); }, frames[frameIndex].delay);
 }
 function surface(width, height) { const c = document.createElement('canvas'); c.width = width; c.height = height; return c; }
+async function loadStillImage(file) {
+  // HTMLImageElement is supported by older mobile browsers too, unlike createImageBitmap.
+  const url = URL.createObjectURL(file), source = new Image();
+  try {
+    await new Promise((resolve, reject) => {
+      source.onload = resolve;
+      source.onerror = () => reject(Error('This image could not be decoded. Try a PNG, JPEG, or WebP; convert HEIC/HEIF photos to JPEG first.'));
+      source.src = url;
+    });
+    const width = source.naturalWidth, height = source.naturalHeight;
+    if (!width || !height) throw Error('This image has no usable dimensions.');
+    const scale = Math.min(1, 2048 / Math.max(width, height), Math.sqrt(MAX_PIXELS / (width * height)));
+    const image = surface(Math.max(1, Math.floor(width * scale)), Math.max(1, Math.floor(height * scale)));
+    const context = image.getContext('2d');
+    if (!context) throw Error('Not enough memory to open this image. Try a smaller photo.');
+    context.drawImage(source, 0, 0, image.width, image.height);
+    return { image, resized: scale < 1 };
+  } finally { source.src = ''; URL.revokeObjectURL(url); }
+}
 async function load(file) {
   if (!file || busy) return;
   busy = true; $('save').disabled = true;
@@ -175,7 +195,7 @@ async function load(file) {
     status('Opening locally…');
     const bytes = await file.arrayBuffer();
     const isGif = new TextDecoder().decode(bytes.slice(0, 6)).startsWith('GIF8');
-    let nextFrames, width, height;
+    let nextFrames, width, height, resized = false;
     if (isGif) {
       const gif = parseGIF(bytes); width = gif.lsd.width; height = gif.lsd.height;
       const count = gif.frames.filter(f => f.image).length;
@@ -197,10 +217,11 @@ async function load(file) {
         if (before) c.putImageData(before, 0, 0);
       }
     } else {
-      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw Error('Choose a PNG, JPEG, WebP, or GIF.');
-      const image = await createImageBitmap(file);
+      // Some phone file pickers omit MIME types; let the browser decoder decide.
+      if (file.type && !file.type.startsWith('image/')) throw Error('Choose an image: PNG, JPEG, WebP, or GIF.');
+      const loaded = await loadStillImage(file);
+      const image = loaded.image; resized = loaded.resized;
       width = image.width; height = image.height;
-      if (width * height > MAX_PIXELS) { image.close(); throw Error('Image is too large. Please resize to under 4 megapixels.'); }
       nextFrames = [{ image, delay: 100 }];
     }
     clearTimeout(timer);
@@ -209,8 +230,8 @@ async function load(file) {
     canvas.width = width; canvas.height = height; canvas.hidden = false; $('empty').hidden = true;
     filename = file.name.replace(/\.[^.]+$/, '') || 'meme';
     if ($('fileinfo')) $('fileinfo').textContent = `${file.name} · ${width} × ${height}${animated ? ` · ${frames.length} frames` : ''}`;
-    status(animated ? 'Animated GIF ready. Downloads keep the animation; transparency becomes white.' : 'Ready to add your punchline.');
-  } catch (e) { status(e.message || 'Could not open that image.'); }
+    status(resized ? `Photo resized locally to ${width} × ${height} for reliable editing and downloads.` : animated ? 'Animated GIF ready. Downloads keep the animation; transparency becomes white.' : 'Ready to add your punchline.', resized);
+  } catch (e) { status(e.message || 'Could not open that image.', true); }
   finally { busy = false; $('save').disabled = !frames.length; play(); }
 }
 $('choose').onclick = $('replace').onclick = () => { if (!busy) $('file').click(); };
@@ -245,6 +266,6 @@ $('save').onclick = async () => {
     a.href = url; a.download = `${filename}-freeeme.${animated ? 'gif' : 'png'}`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 30_000);
     status('Download ready. No files left your device.');
-  } catch (e) { status(`Could not export: ${e.message}`); }
+  } catch (e) { status(`Could not export: ${e.message}`, true); }
   finally { busy = false; $('save').disabled = false; setEditingDisabled(false); play(); }
 };
