@@ -1,0 +1,9 @@
+{
+  "title": "GPX to Treadmill",
+  "description": "Convert outdoor routes to treadmill incline settings",
+  "output": "gpx-treadmill.html",
+  "content": "content.md",
+  "assets": "assets",
+  "styles": ["style.css"],
+  "scripts": ["js/gpxParser.js", "js/unitConverter.js", "js/themeManager.js", "js/elevationProfile.js", "js/intervalCalculator.js", "js/tableRenderer.js", "js/linkGenerator.js", "js/main.js"]
+}

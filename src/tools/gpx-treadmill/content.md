@@ -3,6 +3,7 @@ title: 'GPX to Treadmill'
 lang: en
 ...
 
+```{=html}
 <div class="gpx-tool">
 
 <p class="gpx-tool__subtitle">Convert your outdoor routes to treadmill incline settings</p>
@@ -176,11 +177,5 @@ value="0.5" min="0.5" max="5" step="0.5">
 
 </div>
 
-<script src="gpx-treadmill-js/gpxParser.js"></script>
-<script src="gpx-treadmill-js/unitConverter.js"></script>
-<script src="gpx-treadmill-js/themeManager.js"></script>
-<script src="gpx-treadmill-js/elevationProfile.js"></script>
-<script src="gpx-treadmill-js/intervalCalculator.js"></script>
-<script src="gpx-treadmill-js/tableRenderer.js"></script>
-<script src="gpx-treadmill-js/linkGenerator.js"></script>
-<script src="gpx-treadmill-js/main.js"></script>
+<!-- Styles and ordered scripts are declared in tool.json. -->
+```

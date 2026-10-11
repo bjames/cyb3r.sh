@@ -1,1 +1,5 @@
 site/status.txt
+node_modules/
+src/tools/*/app/dist/
+__pycache__/
+*.pyc

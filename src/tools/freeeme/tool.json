@@ -1,0 +1,11 @@
+{
+  "title": "Freeeme",
+  "description": "Make image and animated GIF memes locally",
+  "output": "freeeme.html",
+  "content": "content.md",
+  "working_directory": "app",
+  "install": ["npm", "ci"],
+  "build": ["npm", "run", "build"],
+  "assets": "app/dist",
+  "bundle": { "manifest": ".vite/manifest.json", "entry": "src/main.js" }
+}

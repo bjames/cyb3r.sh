@@ -1,6 +1,7 @@
 # dnf update + reboot first
 dnf install epel-release -y
-dnf install pandoc git -y
+# Node/npm are only needed where bundled tools are built, not to serve site/.
+dnf install pandoc git python3 nodejs npm -y
 dnf install nginx -y
 systemctl start nginx
 systemctl enable nginx

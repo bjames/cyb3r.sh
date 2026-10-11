@@ -1,0 +1,5 @@
+{
+  "name": "freeeme", "version": "1.0.0", "private": true, "type": "module",
+  "scripts": { "build": "vite build" },
+  "dependencies": { "gifenc": "^1.0.3", "gifuct-js": "^2.1.2", "vite": "^6.1.0" }
+}

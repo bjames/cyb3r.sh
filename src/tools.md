@@ -5,4 +5,4 @@ lang: en
 
 This is a collection of web based tools I've created. Unless otherwise stated, no data is stored or processed on the server side. 
 
-[GPX to Treadmill](gpx-treadmill.html) - Convert outdoor routes to treadmill incline settings
+<!-- Tool links are generated from src/tools/*/tool.json. -->

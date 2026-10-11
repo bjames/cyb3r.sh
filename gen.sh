@@ -1,12 +1,15 @@
+#!/usr/bin/env bash
+# Work from the checkout even when invoked by cron or an absolute path.
+cd "$(dirname "$0")" || exit 1
 # if the script is run with the argument "clean", remove the site directory
-if [[ $1 == "clean" ]]; then
+if [[ ${1:-} == "clean" ]]; then
     echo "Cleaning site directory..."
     rm -rf site
 fi
 mkdir -p site
 mkdir -p site/media
 tmp_index=$(mktemp /tmp/XXXXXXXXX.md)
-trap "rm -f $tmp_indx" EXIT
+trap 'rm -f "$tmp_index"' EXIT
 cp src/index.md $tmp_index
 updated=false
 # we need to iterate over the files in reverse order to have the latest articles on top
@@ -60,19 +63,5 @@ else
     pandoc src/404.md -o site/404.html --standalone --css style.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
 fi
 
-if [ src/tools.md -ot site/tools.html ]; then
-    echo "Tools page has not been modified since last generation, skipping..."
-else
-    echo "Generating tools page..."
-    pandoc src/tools.md -o site/tools.html --standalone --css style.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
-fi
-
-if [ src/gpx-treadmill-content.md -ot site/gpx-treadmill.html ]; then
-    echo "GPX treadmill page has not been modified since last generation, skipping..."
-else
-    echo "Generating GPX treadmill page..."
-    pandoc src/gpx-treadmill-content.md -o site/gpx-treadmill.html --standalone --css style.css --css gpx-treadmill.css --include-before-body src/header.html --include-after-body src/footer.html -H src/head.html
-fi
-
-cp -u src/gpx-treadmill.css site/gpx-treadmill.css
-mkdir -p site/gpx-treadmill-js && cp -au src/gpx-treadmill-js/. site/gpx-treadmill-js/
+# Tool manifests own their assets and page configuration; no per-tool cases here.
+python3 scripts/build_tools.py || exit 1
