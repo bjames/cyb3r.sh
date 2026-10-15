@@ -38,6 +38,8 @@ cp -au src/media/. site/media
 cp -au src/articles/media/. site/media
 cp -au src/favicon/. site
 cp -u src/style.css site/style.css
+cp -u src/gallery.css site/gallery.css
+cp -u src/gallery.js site/gallery.js
 
 if [ "$updated" = true ]; then
     echo "Site has been updated with new articles. Generating index..."
