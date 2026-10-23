@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 10 Oct 2026 21:41:17 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 16 Oct 2026 14:58:26 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>WWHF 2026 - Cyber Deck</title>
+      <link>https://cyb3r.sh/2026-10-14-wwhf-cyber-deck.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-10-14-wwhf-cyber-deck.html</guid>
+      <pubDate>Wed, 14 Oct 2026 00:00:00 GMT</pubDate>
+      <description>I went to WWHF this year and had a blast. My team consisting of four of seven </description>
+    </item>
     <item>
       <title>Intro to Modern Cryptography</title>
       <link>https://cyb3r.sh/2026-05-20-intro_to_modern_cryptography.html</link>
