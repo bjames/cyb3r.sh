@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 10 Oct 2026 21:41:17 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 11 Nov 2026 14:34:23 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>&apos;Merkle Trees, CT and MTCs: Part 1 - Merkle Trees&apos;</title>
+      <link>https://cyb3r.sh/2026-11-11-merkle-trees.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-11-11-merkle-trees.html</guid>
+      <pubDate>Wed, 11 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Merkle Trees are a simple, elegant and useful data structure when you need to validate that something is part of an underlying set of data, while minimizing the amount of data you need to verify when proving inclusion.</description>
+    </item>
     <item>
       <title>Intro to Modern Cryptography</title>
       <link>https://cyb3r.sh/2026-05-20-intro_to_modern_cryptography.html</link>

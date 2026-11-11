@@ -92,6 +92,16 @@ pre {
     overflow-x: auto;
 }
 
+/* Keep Pandoc's language-labelled blocks readable in both site themes.
+   Override its embedded token palette without discarding language metadata. */
+pre code.sourceCode span {
+    color: inherit;
+    background-color: transparent;
+    font-weight: inherit;
+    font-style: inherit;
+    text-decoration: inherit;
+}
+
 /* Display author and date side by side in the header */
 #title-block-header .author,
 #title-block-header .date {

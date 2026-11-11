@@ -14,8 +14,10 @@ cp src/index.md $tmp_index
 updated=false
 # we need to iterate over the files in reverse order to have the latest articles on top
 for file in $(ls -r src/articles/*.md); do
-    title=$(sed -n '2p' $file | sed --expression='s/title:[[:space:]]//g')
-    publication_date=$(sed -n '3p' $file | sed --expression='s/date:[[:space:]]//g')
+    title=$(pandoc "$file" --standalone --to=plain \
+        --template=<(printf '%s' '$title$'))
+    publication_date=$(pandoc "$file" --standalone --to=plain \
+        --template=<(printf '%s' '$date$'))
     # if DRAFT is in filename, don't add to index
     if [[ $file != *DRAFT* ]]; then
         echo "[$publication_date - $title]($(basename $file .md).html)" >> $tmp_index
