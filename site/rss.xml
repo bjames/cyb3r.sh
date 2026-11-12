@@ -5,8 +5,15 @@
     <link>https://cyb3r.sh/</link>
     <description>Security, CTF writeups, and technical blog</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 11 Nov 2026 14:34:23 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 12 Nov 2026 09:06:22 GMT</lastBuildDate>
     <generator>cyb3r.sh RSS Generator</generator>
+    <item>
+      <title>&apos;Merkle Trees, CT and MTCs: Part 2 - Certificate Transparency&apos;</title>
+      <link>https://cyb3r.sh/2026-11-12-cert-transparency.html</link>
+      <guid isPermaLink="true">https://cyb3r.sh/2026-11-12-cert-transparency.html</guid>
+      <pubDate>Thu, 12 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Certificate Transparency (CT) was introduced in 2013 as a response to the DigiNotar breach[^DigiNotar]. [RFC 6962](https://www.rfc-editor.org/info/rfc6962/) was published in June 2013 and it was recently superceeded by [RFC 9162](https://www.rfc-editor.org/info/rfc9162/). RFC 6962 support is rapidly being phased out[^ctv1_sunset] when I mention technical details in this article, it&apos;s safe to assume I&apos;m talking about RFC 9162.</description>
+    </item>
     <item>
       <title>&apos;Merkle Trees, CT and MTCs: Part 1 - Merkle Trees&apos;</title>
       <link>https://cyb3r.sh/2026-11-11-merkle-trees.html</link>

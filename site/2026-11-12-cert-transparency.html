@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2026-11-12" />
+  <title>Merkle Trees, CT and MTCs: Part 2 - Certificate Transparency</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="alternate" type="application/rss+xml" title="cyb3r.sh RSS Feed" href="https://cyb3r.sh/rss.xml">
+  <link rel="stylesheet" href="gallery.css">
+  <script src="gallery.js" defer></script>
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+	<a href="tools.html">tools</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">Merkle Trees, CT and MTCs: Part 2 - Certificate
+Transparency</h1>
+<p class="author">Brandon James</p>
+<p class="date">2026-11-12</p>
+</header>
+<p>Certificate Transparency (CT) was introduced in 2013 as a response to
+the DigiNotar breach<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>. <a
+href="https://www.rfc-editor.org/info/rfc6962/">RFC 6962</a> was
+published in June 2013 and it was recently superceeded by <a
+href="https://www.rfc-editor.org/info/rfc9162/">RFC 9162</a>. RFC 6962
+support is rapidly being phased out<a href="#fn2" class="footnote-ref"
+id="fnref2" role="doc-noteref"><sup>2</sup></a> when I mention technical
+details in this article, it’s safe to assume I’m talking about RFC
+9162.</p>
+<h1 id="the-problem">The Problem</h1>
+<p>Browsers trust many CAs<a href="#fn3" class="footnote-ref"
+id="fnref3" role="doc-noteref"><sup>3</sup></a> and any of those CAs are
+allowed to issue certificates for any domain<a href="#fn4"
+class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. If
+an attacker manages to compromise a single CA in a major root store’s
+program, this could lead to a bad day for the internet.</p>
+<p>CT makes issuance publically observable. This means misissuance is
+still possible, but CT monitors can catch it when it occurs.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>In 2011 DigiNotar was comprimised, the attackers used
+their access to issue fradulent certificates for major domains including
+*google.com, *skype.com and update.microsoft.com. The issued
+certificates were in turn used to target Iranian citizens. This is well
+documented and worth an online search if you’re unfamiliar.<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Last Thursday, November 5th, 2026, <a
+href="https://groups.google.com/a/chromium.org/g/ct-policy/c/XvCEH84kVXw">Apple
+updated</a> their CT program policy to no longer require the use of RFC
+6962 compliant CT logs. In turn <a
+href="https://groups.google.com/a/chromium.org/g/ct-policy/c/Y9t44bJqpkc">google
+almost immediately announced</a> they were spinning down their RFC 6962
+speaking CT logs. Other operators will follow suit.<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>At time of writing, Google Chrome’s root store program
+lists 44 unique Certificate Authorities. <a
+href="https://www.ccadb.org/resources">CCADB</a> provides up to data
+information on each browser and OS root program.<a href="#fnref3"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>CAA records allow domain owners to specify which CAs are
+authorized to issue certificates for their domain. The majority of
+domains do not publish CAA records and since clients don’t normally
+check CAA records, this isn’t a perfect solution today, but misissuance
+is likely to be caught by CT monitors.<a href="#fnref4"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a> <a href="rss.xml">rss</a>
+    </p>
+</div>
+</body>
+</html>
