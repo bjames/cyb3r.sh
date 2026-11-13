@@ -64,8 +64,38 @@ function createOverlay(id, name) {
     b[axis] = clamp(b[axis] + delta, min, max); render();
   });
 }
+function addBackgroundControls(id, name) {
+  const row = document.createElement('div'); row.className = 'caption-input';
+  const tools = document.createElement('div'); tools.className = 'caption-background';
+  const label = document.createElement('label'); label.htmlFor = `${id}-background`; label.textContent = 'Background';
+  const swatch = document.createElement('button'); swatch.type = 'button'; swatch.id = `${id}-background`;
+  swatch.className = 'background-swatch'; swatch.value = 'transparent'; swatch.textContent = '⌧';
+  const color = document.createElement('input'); color.type = 'color'; color.id = `${id}-background-color`; color.value = '#000000';
+  color.hidden = true;
+  color.setAttribute('aria-label', `${name} background color`);
+  const clear = document.createElement('button'); clear.type = 'button'; clear.id = `${id}-background-clear`;
+  clear.className = 'background-clear'; clear.textContent = '⌧'; clear.hidden = true;
+  clear.title = `Make ${name.toLowerCase()} background transparent`; clear.setAttribute('aria-label', clear.title);
+  function update() {
+    const transparent = swatch.value === 'transparent';
+    swatch.textContent = transparent ? '⌧' : '';
+    swatch.style.background = transparent ? 'transparent' : color.value;
+    swatch.title = `${name} background: ${transparent ? 'transparent' : color.value}. Choose color`;
+    swatch.setAttribute('aria-label', swatch.title);
+    clear.hidden = transparent;
+    if (!busy) render();
+  }
+  swatch.addEventListener('click', () => { if (!busy) color.click(); });
+  color.addEventListener('input', () => { if (!busy) { swatch.value = 'color'; update(); } });
+  clear.addEventListener('click', () => { if (!busy) { swatch.value = 'transparent'; update(); swatch.focus(); } });
+  [swatch, color, clear].forEach(input => controls.add(input.id));
+  const text = $(id); text.before(row); row.append(text, tools); tools.append(label, swatch, color, clear);
+  update();
+}
 createOverlay('top', 'Top text');
 createOverlay('bottom', 'Bottom text');
+addBackgroundControls('top', 'Top text');
+addBackgroundControls('bottom', 'Bottom text');
 $('add-caption').addEventListener('click', () => {
   if (busy) return;
   const number = nextCaption++, id = `caption-${number}`, name = `Text box ${number}`;
@@ -81,10 +111,11 @@ $('add-caption').addEventListener('click', () => {
   input.placeholder = 'Add another punchline…';
   input.addEventListener('input', () => { if (!busy) render(); });
   heading.append(label, remove); editor.append(heading, input); $('extra-captions').append(editor);
-  controls.add(id); createOverlay(id, name);
+  controls.add(id); createOverlay(id, name); addBackgroundControls(id, name);
   remove.addEventListener('click', () => {
     if (busy) return;
-    overlays[id].remove(); delete overlays[id]; delete boxes[id]; controls.delete(id);
+    overlays[id].remove(); delete overlays[id]; delete boxes[id];
+    [id, `${id}-background`, `${id}-background-color`, `${id}-background-clear`].forEach(key => controls.delete(key));
     editor.remove(); render(); $('add-caption').focus();
   });
   syncBoxes(); render(); input.focus();
@@ -146,6 +177,10 @@ function caption(text, id) {
   ctx.font = `900 ${size}px ${$('font').value}`;
   lines = wrap(text, width);
   ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
+  if ($(`${id}-background`).value === 'color') {
+    ctx.fillStyle = $(`${id}-background-color`).value;
+    ctx.fillRect(b.x * canvas.width, b.y * canvas.height, b.w * canvas.width, b.h * canvas.height);
+  }
   ctx.fillStyle = $('color').value; ctx.strokeStyle = $('outline').value;
   ctx.lineWidth = Math.max(2, size * .075);
   const lineHeight = size * 1.12;

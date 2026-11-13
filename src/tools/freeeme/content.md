@@ -17,15 +17,18 @@ lang: en
 <canvas id="canvas" hidden aria-label="Meme preview"></canvas>
 </section>
 <aside>
-<p class="editor-help">Drag boxes on the preview to move them. Drag the right corner to resize. Keyboard: arrows move, Shift + arrows resize.</p>
+<div class="caption-editor">
 <label for="top">TOP TEXT</label>
 <textarea id="top" rows="2" placeholder="TFW I DON'T STORE YOUR FILES"></textarea>
+</div>
+<div class="caption-editor">
 <label for="bottom">BOTTOM TEXT</label>
 <textarea id="bottom" rows="2" placeholder="OR ADD WATERMARKS"></textarea>
+</div>
 <div id="extra-captions"></div>
 <button id="add-caption" class="secondary" type="button">+ Add text box</button>
 <div class="row"><label for="size">TEXT SIZE</label><output id="sizeValue">8%</output></div>
-<input id="size" type="range" min="3" max="18" value="8">
+<input id="size" type="range" min="3" max="50" value="8">
 <div class="row controls">
 <div><label for="color">TEXT</label><input type="color" id="color" value="#ffffff"></div>
 <div><label for="outline">OUTLINE</label><input type="color" id="outline" value="#000000"></div>
