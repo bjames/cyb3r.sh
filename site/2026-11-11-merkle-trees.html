@@ -211,9 +211,9 @@ along, hash input data without the <code>-x</code>, hash sibling nodes
 to generate parent nodes with the <code>-x</code>.</p>
 <p>A few notes about the construction of this tree:</p>
 <ul>
-<li>Height of the tree is <code>h=ceiling(log_2(n+1))-1</code> where n
-is the total number of nodes and height is the number of edges on the
-longest root-to-leaf path.</li>
+<li>Height of the tree is <code>h=ceiling(log_2(n))</code> where
+<em>n</em> is the total number of leaves and height is the number of
+edges on the longest root-to-leaf path.</li>
 <li>The exact way the hash function is applied isn’t quite accurate for
 Merkle Tree Certificates in this example. Merkle Tree Certificates
 concatenate <code>0x01</code> before calculating internal node hashes
@@ -228,7 +228,7 @@ implementations.</li>
 <p>Proving an object is included in a Merkle Tree requires relatively
 little data. If we have an object, we need the hash of its sibling, the
 hash of its parent’s sibling and so on, up to the root. This means we
-need at most <code>h = ceiling(log_2(n+1) - 1)</code> hashes, along with
+need at most <code>h = ceiling(log_2(n))</code> hashes, along with
 left/right ordering to recompute a root hash for comparison against an
 authenticated root.</p>
 <div class="gallery">
@@ -271,10 +271,120 @@ alt="Finally, compare the published and trusted root against the one we calculat
 trusted root against the one we calculated</figcaption>
 </figure>
 </div>
+<h2 id="proof-of-consistency">Proof of Consistency</h2>
+<p>When dealing with Merkle Trees it is useful to be able to validate
+that the current state of a tree is consistent with the previous state
+of the tree. This can be done very efficiently. Given the previous root
+hash and tree size (defined as the number of leaves) the consistency
+proof is at most <code>ceiling(log_2n) + 1</code> hashes (where n is the
+number of leaves), but in many circumstances it’s less than that. Given
+a previous tree size of <em>m</em>, a current tree size of <em>n</em>
+and <em>k</em> the largest power of two smaller than <em>n</em> we have
+three scenarios to consider.<a href="#fn1" class="footnote-ref"
+id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>In all cases verification must establish agreement with the stored
+old root and the new root.</p>
+<ol type="1">
+<li><em>m</em> = <em>k</em> in this scenario, the previous tree consists
+of the complete subtree of the left child of the new root. Validating
+consistency only requires the new right child and we can confirm the new
+root by calculating
+<code>H(stored root || provided right hash)</code>.</li>
+<li><em>m</em> &gt; <em>k</em> the old tree already had the complete
+left child of the new tree and a prefix of the new right subtree. We are
+provided the intermediate hashes of the right tree and the root hash of
+the left subtree, then we can recursively validate that a) our old root
+can be calculated from the left subtree root and the provided right
+intermediate hashes and b) that the new root hash can be calculated from
+the left subtree root and the right intermediate hashes. Then we store
+the new root hash and tree size.</li>
+<li><em>m</em> &lt; <em>k</em> the old tree is entirely contained in the
+left child of the new tree. We are provided with intermediate hashes for
+both the left subtree and root of the right subtree. We recursively
+verify the left subtree and ensure that we can recalculate our old root
+hash, then we calculate the new root from the new left and right child
+hashes and finally store the new root hash and size.</li>
+</ol>
+<div class="gallery">
+<figure>
+<img src="media/merkle_build1.png"
+alt="Starting with our initial tree from earlier, through an out of band mechanism, we can verify this tree and store an authenticated root hash and leaf count." />
+<figcaption aria-hidden="true">Starting with our initial tree from
+earlier, through an out of band mechanism, we can verify this tree and
+store an authenticated root hash and leaf count.</figcaption>
+</figure>
+<figure>
+<img src="media/merkle_consistency0.png"
+alt="In the first scenario we consider, the tree has grown from m=4 to n=6. The nearest power of two less than n is k=4. So m=4, this tells the verifier that the left tree is complete and that the previous root is now the left child. The owner of the tree sends us the right child hash (48900317) and the new root. We calculate H(old_root || right_child) or crc -x 66915c89 48900317 in this case. If the calculated root matches the new root, then we store it, along with the new size of 6" />
+<figcaption aria-hidden="true">In the first scenario we consider, the
+tree has grown from m=4 to n=6. The nearest power of two less than n is
+k=4. So m=4, this tells the verifier that the left tree is complete and
+that the previous root is now the left child. The owner of the tree
+sends us the right child hash (<code>48900317</code>) and the new root.
+We calculate <code>H(old_root || right_child)</code> or
+<code>crc -x 66915c89 48900317</code> in this case. If the calculated
+root matches the new root, then we store it, along with the new size of
+6</figcaption>
+</figure>
+<figure>
+<img src="media/merkle_consistency1.png"
+alt="Now, consider the case where the tree has grown from m=5 to n=6" />
+<figcaption aria-hidden="true">Now, consider the case where the tree has
+grown from m=5 to n=6</figcaption>
+</figure>
+<figure>
+<img src="media/merkle_consistency2.png"
+alt="m=5, n=6 so k is still 4. m&gt;k tells the verifier that the left subtree was complete, but the root will have changed. We are provided with the two intermediate hashes from the right subtree (ac6bc6e3 and 3be4c95c) and the root of the left subtree (66915c89). First, we verify we can reconstruct the old root using the left subtree root crc -x 66915c89 ac6bc6e3. Then we reconstruct the new right subtree using the right intermediate hashes crc -x ac6bc6e3 3be4c95c and finally we reconstruct the new root crc -x 66915c89 48900317. If this all checks out, we store the new root along with size and signature." />
+<figcaption aria-hidden="true">m=5, n=6 so k is still 4. m&gt;k tells
+the verifier that the left subtree was complete, but the root will have
+changed. We are provided with the two intermediate hashes from the right
+subtree (<code>ac6bc6e3</code> and <code>3be4c95c</code>) and the root
+of the left subtree (<code>66915c89</code>). First, we verify we can
+reconstruct the old root using the left subtree root
+<code>crc -x 66915c89 ac6bc6e3</code>. Then we reconstruct the new right
+subtree using the right intermediate hashes
+<code>crc -x ac6bc6e3 3be4c95c</code> and finally we reconstruct the new
+root <code>crc -x 66915c89 48900317</code>. If this all checks out, we
+store the new root along with size and signature.</figcaption>
+</figure>
+<figure>
+<img src="media/merkle_build1.png"
+alt="Finally, we’ll consider the case where the tree has grown from m=4 to n=9" />
+<figcaption aria-hidden="true">Finally, we’ll consider the case where
+the tree has grown from m=4 to n=9</figcaption>
+</figure>
+<figure>
+<img src="media/merkle_consistency3.png"
+alt="m=4, n=9 so k is now 8. m&lt;k tells the verifier that the old tree is entirely contained in the left child of the new tree. We now have a new root, the left subtree has a new root and the right subtree is brand new. We are provided with the sibling of our old root (7dc30a61) and the root of the right subtree (931bbb8a). First we can calculate the new left subtree root by hashing our old root and its sibling: crc -x 66915c89 7dc30a61 this gives us 3745f8ae which is the new left subtree root. Then we can calculate the new root by taking the left subtree root we just calculated and the root of our right subtree crc -x 3745f8ae 931bbb8a. If this checks out, we store the new root along with the size and signature." />
+<figcaption aria-hidden="true">m=4, n=9 so k is now 8. m&lt;k tells the
+verifier that the old tree is entirely contained in the left child of
+the new tree. We now have a new root, the left subtree has a new root
+and the right subtree is brand new. We are provided with the sibling of
+our old root (<code>7dc30a61</code>) and the root of the right subtree
+(<code>931bbb8a</code>). First we can calculate the new left subtree
+root by hashing our old root and its sibling:
+<code>crc -x 66915c89 7dc30a61</code> this gives us
+<code>3745f8ae</code> which is the new left subtree root. Then we can
+calculate the new root by taking the left subtree root we just
+calculated and the root of our right subtree
+<code>crc -x 3745f8ae 931bbb8a</code>. If this checks out, we store the
+new root along with the size and signature.</figcaption>
+</figure>
+</div>
 <p>An inclusion proof tells us an object belongs to a tree represented
-by a root hash. Authentication of that root and integrity of an overall
-tree are different problems. In the next article we’ll look at how
-Certificate Transparency addresses those problems.</p>
+by a root hash. A consistency proof tells us the older tree’s entries
+remain an unchanged prefix of the newer tree. Authentication of that
+root and integrity of an overall tree are different problems. In the
+next article we’ll look at how Certificate Transparency addresses those
+problems.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>For all 0 &lt; <em>m</em> &lt; <em>n</em><a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
 <div class="footer">
     <p>
         <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>

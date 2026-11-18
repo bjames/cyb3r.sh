@@ -42,6 +42,15 @@
 .freeeme .secondary:hover{border-color:var(--accent-color)}
 .freeeme #add-caption{margin:0 0 24px}
 .freeeme .extra-caption .row{margin-bottom:8px;gap:8px}
+.freeeme .caption-editor,.freeeme .extra-caption{border-bottom:1px solid var(--border-color);padding-bottom:16px;margin-bottom:20px}
+.freeeme .caption-editor textarea,.freeeme .extra-caption textarea{margin-bottom:8px}
+.freeeme .caption-input{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.freeeme .caption-input textarea{min-width:0}
+.freeeme .caption-background{display:flex;align-items:center;gap:8px}
+.freeeme .caption-background label{margin-bottom:0}
+.freeeme .background-swatch,.freeeme .background-clear{width:36px;height:36px;padding:0;color:var(--text-color);border:1px solid var(--border-color);font-size:24px;line-height:1}
+.freeeme .background-clear{background:transparent;height:26px;font-size:20px}
+.freeeme .caption-background [hidden]{display:none}
 .freeeme .remove-caption{padding:5px 8px;background:transparent;color:var(--accent-color);font-size:10px}
 .freeeme #status{font-size:11px;line-height:1.5;margin-bottom:0}
 .freeeme .visually-hidden{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
