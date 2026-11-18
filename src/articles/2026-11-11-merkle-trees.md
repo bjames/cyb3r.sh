@@ -56,12 +56,12 @@ To hash a string `crc foo` yields `8c736521`. To hash hex formatted bytes `crc -
 
 A few notes about the construction of this tree:
 
-* Height of the tree is `h=ceiling(log_2(n+1))-1` where n is the total number of nodes and height is the number of edges on the longest root-to-leaf path.
+* Height of the tree is `h=ceiling(log_2(n))` where _n_ is the total number of leaves and height is the number of edges on the longest root-to-leaf path.
 * The exact way the hash function is applied isn't quite accurate for Merkle Tree Certificates in this example. Merkle Tree Certificates concatenate `0x01` before calculating internal node hashes `H(0x01 || left child hash || right child hash)` and `0x00` before calculating leaf hashes `H(0x00 || cert_data)`. This is done for [domain separation](https://en.wikipedia.org/wiki/Domain_separation), a common principle applied to many hashed structure implementations.
 
 ## Proof of Inclusion
 
-Proving an object is included in a Merkle Tree requires relatively little data. If we have an object, we need the hash of its sibling, the hash of its parent's sibling and so on, up to the root. This means we need at most `h = ceiling(log_2(n+1) - 1)` hashes, along with left/right ordering to recompute a root hash for comparison against an authenticated root. 
+Proving an object is included in a Merkle Tree requires relatively little data. If we have an object, we need the hash of its sibling, the hash of its parent's sibling and so on, up to the root. This means we need at most `h = ceiling(log_2(n))` hashes, along with left/right ordering to recompute a root hash for comparison against an authenticated root. 
 
 :::gallery
 ![Proof of Inclusion for baz](media/merkle_proof0.png)
@@ -77,4 +77,38 @@ Proving an object is included in a Merkle Tree requires relatively little data. 
 ![Finally, compare the published and trusted root against the one we calculated](media/merkle_proof5.png)
 :::
 
-An inclusion proof tells us an object belongs to a tree represented by a root hash. Authentication of that root and integrity of an overall tree are different problems. In the next article we'll look at how Certificate Transparency addresses those problems.
+## Proof of Consistency
+
+When dealing with Merkle Trees it is useful to be able to validate that the current state of a tree is consistent with the previous state of the tree. This can be done very efficiently. Given the previous root hash and tree size (defined as the number of leaves) the consistency proof is at most `ceiling(log_2n) + 1` hashes (where n is the number of leaves), but in many circumstances it's less than that. Given a previous tree size of _m_, a current tree size of _n_ and _k_ the largest power of two smaller than _n_ we have three scenarios to consider.[^mnk]
+
+In all cases verification must establish agreement with the stored old root and the new root.
+
+1. _m_ = _k_ in this scenario, the previous tree consists of the complete subtree of the left child of the new root. Validating consistency only requires the new right child and we can confirm the new root by calculating `H(stored root || provided right hash)`.
+2. _m_ > _k_ the old tree already had the complete left child of the new tree and a prefix of the new right subtree. We are provided the intermediate hashes of the right tree and the root hash of the left subtree, then we can recursively validate that a) our old root can be calculated from the left subtree root and the provided right intermediate hashes and b) that the new root hash can be calculated from the left subtree root and the right intermediate hashes. Then we store the new root hash and tree size.
+3. _m_ < _k_ the old tree is entirely contained in the left child of the new tree. We are provided with intermediate hashes for both the left subtree and root of the right subtree. We recursively verify the left subtree and ensure that we can recalculate our old root hash, then we calculate the new root from the new left and right child hashes and finally store the new root hash and size. 
+
+:::gallery 
+
+![Starting with our initial tree from earlier, through an out of band mechanism, we can verify this tree and store an authenticated root hash and leaf count.](media/merkle_build1.png)
+
+![In the first scenario we consider, the tree has grown from m=4 to n=6. The nearest power of two less than n is k=4. So m=4, this tells the verifier that the left tree is complete and that the previous root is now the left child. The owner of the tree sends us the right child hash (`48900317`) and the new root. We calculate `H(old_root || right_child)` or `crc -x 66915c89 48900317` in this case. If the calculated root matches the new root, then we store it, along with the new size of 6](media/merkle_consistency0.png)
+
+![Now, consider the case where the tree has grown from m=5 to n=6](media/merkle_consistency1.png)
+
+![m=5, n=6 so k is still 4. m>k tells the verifier that the left subtree was complete, but the root will have changed. We are provided with the two intermediate hashes from the right subtree (`ac6bc6e3` and `3be4c95c`) and the root of the left subtree (`66915c89`). First, we verify we can reconstruct the old root using the left subtree root `crc -x 66915c89 ac6bc6e3`. Then we reconstruct the new right subtree using the right intermediate hashes `crc -x ac6bc6e3 3be4c95c` and finally we reconstruct the new root `crc -x 66915c89 48900317`. If this all checks out, we store the new root along with size and signature.](media/merkle_consistency2.png)
+
+![Finally, we'll consider the case where the tree has grown from m=4 to n=9](media/merkle_build1.png)
+
+![m=4, n=9 so k is now 8. m<k tells the verifier that the old tree is entirely contained in the left child of the new tree. We now have a new root, the left subtree has a new root and the right subtree is brand new. We are provided with the sibling of our old root (`7dc30a61`) and the root of the right subtree (`931bbb8a`). First we can calculate the new left subtree root by hashing our old root and its sibling: `crc -x 66915c89 7dc30a61` this gives us `3745f8ae` which is the new left subtree root. Then we can calculate the new root by taking the left subtree root we just calculated and the root of our right subtree `crc -x 3745f8ae 931bbb8a`. If this checks out, we store the new root along with the size and signature.](media/merkle_consistency3.png)
+
+:::
+
+An inclusion proof tells us an object belongs to a tree represented by a root hash. A consistency proof tells us the older tree's entries remain an unchanged prefix of the newer tree. Authentication of that root and integrity of an overall tree are different problems. In the next article we'll look at how Certificate Transparency addresses those problems.
+
+---
+### changelog
+2026-11-17: added consistency proof section and examples. Updated the height definitions to always be based on the number of leaves instead of the number of nodes.
+
+---
+
+[^mnk]: For all 0 < _m_ < _n_
