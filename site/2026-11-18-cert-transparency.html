@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Brandon James" />
+  <meta name="dcterms.date" content="2026-11-18" />
+  <title>Merkle Trees, CT and MTCs: Part 2 - Certificate Transparency</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="favicon.png">
+  <link rel="alternate" type="application/rss+xml" title="cyb3r.sh RSS Feed" href="https://cyb3r.sh/rss.xml">
+  <link rel="stylesheet" href="gallery.css">
+  <script src="gallery.js" defer></script>
+</head>
+<body>
+<div class="header">
+    <h1 class="site-title"><span class="site-title-dir">[root@localhost /]# </span>cyb3r.sh <span class=blink>▉</span>
+    </h1>
+    <div class="title-links">
+        <a href="index.html">index</a>
+        <a href="about.html">about</a>
+	<a href="tools.html">tools</a>
+    </div>
+</div>
+<header id="title-block-header">
+<h1 class="title">Merkle Trees, CT and MTCs: Part 2 - Certificate
+Transparency</h1>
+<p class="author">Brandon James</p>
+<p class="date">2026-11-18</p>
+</header>
+<p>Certificate Transparency (CT) was introduced in 2013 as a response to
+the DigiNotar breach<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>. <a
+href="https://www.rfc-editor.org/info/rfc6962/">RFC 6962</a> was
+published in June 2013 and was officially superseded by <a
+href="https://www.rfc-editor.org/info/rfc9162/">RFC 9162</a> in 2021.
+However, its CT v2 protocol has not seen widespread deployment. Root
+programs and log operators have moved towards <a
+href="https://c2sp.org/static-ct-api@v1.1.0">static CT logs</a><a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>, which retain RFC 6962’s
+precertificate/SCT model while replacing the read API. Starting in 2027
+the Chrome root program plans to begin Merkle Tree Certificate
+bootstrapping. Because of this, I’ll cite RFC 6962 throughout this
+article instead of 9162.</p>
+<h2 id="the-problem">The Problem</h2>
+<p>Browsers trust many CAs<a href="#fn3" class="footnote-ref"
+id="fnref3" role="doc-noteref"><sup>3</sup></a> and unconstrained
+publicly trusted CAs can issue certificates for any domain<a href="#fn4"
+class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. If
+an attacker manages to compromise a single CA in a major root store’s
+program, this could lead to a bad day for the internet.</p>
+<p>CT makes issuance publicly observable. This means misissuance is
+still possible, but CT monitors can catch it when it occurs.</p>
+<h2 id="approach">Approach</h2>
+<p>Issuance following the introduction of RFC 6962 involves several
+parties.</p>
+<ol type="1">
+<li>The Certificate Authority (CA) which validates requests and provides
+DV, OV or EV certificates.</li>
+<li>CT Logs, which record certificate information in an append-only
+Merkle Tree.</li>
+<li>Browsers and Operating systems which enforce their applicable
+trust-store and CT policies.<a href="#fn5" class="footnote-ref"
+id="fnref5" role="doc-noteref"><sup>5</sup></a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6962.html#section-5.3">CT
+Monitors</a> watch logs for suspicious issuance and <a
+href="https://www.rfc-editor.org/rfc/rfc6962.html#section-5.4">CT
+Auditors</a> verify inclusion of entries and consistency between log
+snapshots. In practice the lines are blurry between these two
+roles.</li>
+</ol>
+<h3 id="process-during-issuance">Process during issuance</h3>
+<ol type="1">
+<li>The CA prepares a signed pre-certificate<a href="#fn6"
+class="footnote-ref" id="fnref6"
+role="doc-noteref"><sup>6</sup></a>.</li>
+<li>The CA submits the pre-certificate to CT logs<a href="#fn7"
+class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a>.</li>
+<li>The logs return Signed Certificate Timestamps (SCTs). SCTs can be
+thought of as a promise to log the certificate within the log’s
+published Maximum Merge Delay.</li>
+<li>The CA issues a final certificate with the poison extension field
+excluded. SCTs are made available to clients either by SCTs embedded in
+the certificates, OCSP stapling or in a
+<code>signed_certificate_timestamp</code> TLS extension.</li>
+</ol>
+<div class="gallery">
+<figure>
+<img src="media/ct_issuance_sequence.png"
+alt="Typical Issuance with Embedded SCTs" />
+<figcaption aria-hidden="true">Typical Issuance with Embedded
+SCTs</figcaption>
+</figure>
+</div>
+<h3 id="post-issuance-monitoring-and-auditing">Post-issuance monitoring
+and auditing</h3>
+<p>Certificate Transparency is really just getting started when issuance
+is finished. You may have noticed that there are still two roles that
+haven’t been covered yet.</p>
+<h4 id="browsers-and-operating-systems">Browsers and Operating
+Systems</h4>
+<p>SCTs are delivered to clients via embedding in the certificate, OCSP
+stapling or in the TLS handshake via the
+<code>signed_certificate_timestamp</code> extension. Clients verify SCT
+signatures against the corresponding logs’ public keys and ensure the
+SCTs meet the applicable browser or OS CT policy. These checks are
+performed in addition to normal certificate validation. However, SCTs
+only verify that the log promised to include the certificate in the log,
+not that it was actually included.</p>
+<figure>
+<img src="media/cyb3r_embedded_scts.png"
+alt="SCTs embedded in cyb3r.sh’s certificate at the time of writing" />
+<figcaption aria-hidden="true">SCTs embedded in cyb3r.sh’s certificate
+at the time of writing</figcaption>
+</figure>
+<h4 id="ct-monitorsauditors">CT Monitors/Auditors</h4>
+<p>CT Monitors can fetch log entries and look for unexpected issuance
+and alert domain owners if they find issues. Some of these also play an
+audit role and verify cryptographic integrity, append-only behavior and
+validate inclusion of certificates following the log’s Maximum Merge
+Delay.</p>
+<p>You can find a list of CT monitors <a
+href="https://certificate.transparency.dev/monitors/">here</a>. It’s
+worth noting that not all CT monitors play an active audit role, some
+act more like looking glass servers and only provide searchable
+interfaces for log data without additional audit functions.</p>
+<h3 id="dealing-with-conflicting-views">Dealing with conflicting
+views</h3>
+<p>In theory, a malicious log could present a different view of their CT
+log to different monitors to hide misissuance. The RFC authors
+originally suggested addressing this via a “gossip” mechanism in which
+clients exchange STHs with each other to detect bad behavior. The <a
+href="https://www.rfc-editor.org/rfc/rfc6962#section-9">RFC leaves</a>
+the gossip mechanism unspecified.</p>
+<p>In practice, Chrome does some <a
+href="https://chromium.googlesource.com/chromium/src/+/HEAD/services/network/sct_auditing/README.md">sampled
+SCT auditing</a> which could expose misissued certificates being
+presented to a subset of users and unhonored logging promises. In the
+future, Merkle Tree Certificates (covered in the next article) may
+address this via <a
+href="https://www.ietf.org/archive/id/draft-ietf-plants-merkle-tree-certs-08.html#section-5.3">cosigning</a>.</p>
+<figure>
+<img src="media/ct_split_view.png"
+alt="Two signed snapshots from the same log, with the same tree size but different root hashes are evidence of equivocation" />
+<figcaption aria-hidden="true">Two signed snapshots from the same log,
+with the same tree size but different root hashes are evidence of
+equivocation</figcaption>
+</figure>
+<h3 id="ct-log-structure">CT Log Structure</h3>
+<p>In the <a href="https://cyb3r.sh/2026-11-11-merkle-trees.html">prior
+article</a> we established the rough shape of Merkle Trees used by CT
+logs. The CT RFCs make a few additional distinctions.</p>
+<ol type="1">
+<li><a
+href="https://www.rfc-editor.org/rfc/rfc6962.html#section-3.5">Signed
+Tree Head (STH)</a> is a structure signed by the CT log consisting of
+the root hash, tree size and timestamp.</li>
+<li><a
+href="https://www.rfc-editor.org/rfc/rfc6962.html#section-2.1.1">Inclusion
+Proof</a> is the shortest list of additional nodes required to compute
+the Merkle Tree hash for a given tree from a particular leaf.</li>
+<li><a
+href="https://www.rfc-editor.org/rfc/rfc6962.html#section-2.1.2">Consistency
+Proof</a> is used to show that an older checkpoint’s entries remain an
+unchanged prefix of a newer checkpoint.</li>
+<li><a
+href="https://www.rfc-editor.org/rfc/rfc6962.html#section-3.4">Leaf
+Input Data</a> for pre-certificate entries is a structure consisting of
+reconstructed certificate to be signed (TBSCertificate), issuer-key
+hash, timestamp and extensions. Logs <em>can</em> also contain
+final-certificate entries.</li>
+</ol>
+<p>Certificate Transparency makes issuance observable, but SCT
+validation alone checks a promise of inclusion rather than the inclusion
+itself. Meanwhile, post-quantum public keys and signatures substantially
+increase certificate and handshake sizes. Merkle Tree Certificates
+(MTCs) integrate transparency into certificate authentication and use
+signed tree structures instead of individual signatures stored with each
+certificate reducing overhead. In the next article we’ll explore that
+design and Chrome’s bootstrapping planned to begin in 2027.</p>
+<div class="gallery">
+<figure>
+<img src="media/ct-signature-size.svg"
+alt="ML-DSA produces signatures substantially larger than those produced by ECDSA P-256" />
+<figcaption aria-hidden="true">ML-DSA produces signatures substantially
+larger than those produced by ECDSA P-256</figcaption>
+</figure>
+</div>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>In 2011 DigiNotar was compromised, the attackers used
+their access to issue fraudulent certificates for major domains
+including *google.com, *skype.com and update.microsoft.com. The
+fraudulent Google certificates were used to target Iranian users. This
+is well documented and worth an online search if you’re unfamiliar.<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>On November 5, 2026, Apple <a
+href="https://groups.google.com/a/chromium.org/g/ct-policy/c/XvCEH84kVXw">announced</a>
+that they would no longer require that at least one SCT must be issued
+from a log compliant with RFC 6962. This effectively ended the
+requirement that non-static CT logs must be used by CA operators. It
+should be noted that static CT logs use RFC 6962 conventions for writes,
+but use a different storage mechanism and read path.<a href="#fnref2"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>At time of writing, Google Chrome’s root store program
+lists 44 distinct CA organizations (based on CCADB data). <a
+href="https://www.ccadb.org/resources">CCADB</a> provides up-to-date
+information on each browser and OS root program.<a href="#fnref3"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>CAA records allow domain owners to specify which CAs are
+authorized to issue certificates for their domain. However, CAs are
+responsible for checking CAA records at issuance time and not all
+domains publish CAA records, so this isn’t a perfect system. It’s easy
+to imagine scenarios where a compromised CA would ignore CAA records.<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>While each root store program is independent, Mozilla’s
+<a
+href="https://bugzilla.mozilla.org/buglist.cgi?product=CA%20Program&amp;bug_status=__open__">Bugzilla</a>
+tracker is the de facto mechanism for reporting incidents involving CA
+adherence to CAB Forum Baseline Requirements or individual CAs’
+Certificate Policy and Certification Practice Statements<a
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>This is essentially a copy of the certificate all fields
+populated except the Signed Certificate Timestamps (SCTs) and the
+addition of a critical “poison” extension field that prevents the
+pre-certificate from being trusted by TLS clients.<a href="#fnref6"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>CAs submit the pre-certificates to multiple independent
+logs for redundancy and to satisfy CT policy.<a href="#fnref7"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+<div class="footer">
+    <p>
+        <a href="mailto:brandon@cyb3r.sh">🖂 brandon@cyb3r.sh</a>
+    </p>
+    <p>
+        <a href="https://github.com/bjames">github</a> <a href="https://bsky.app/profile/cyb3r.sh">bluesky</a> <a
+            href="https://www.strava.com/athletes/8443527">strava</a>
+        <a href="https://www.linkedin.com/in/brandonsjames/">linkedin</a> <a href="rss.xml">rss</a>
+    </p>
+</div>
+</body>
+</html>
