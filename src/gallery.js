@@ -71,6 +71,7 @@
                 img.alt = source.alt || '';
                 cap.textContent = source.alt || '';
                 counter.textContent = (s.index + 1) + ' / ' + s.slides.length;
+                controls.style.display = s.slides.length > 1 ? '' : 'none';
             }
         };
 
@@ -100,7 +101,7 @@
         if (figures.length >= 2) { return figures; }
 
         var imgs = gallery.querySelectorAll('img');
-        if (imgs.length < 2) { return figures; }
+        if (imgs.length === 0) { return figures; }
 
         return Array.prototype.map.call(imgs, function (img) {
             var fig = img.closest('figure');
@@ -121,7 +122,7 @@
 
     function initGallery(gallery) {
         var slides = collectSlides(gallery);
-        if (slides.length < 2) { return; }
+        if (slides.length === 0) { return; }
 
         var frame = document.createElement('div');
         frame.className = 'gallery-frame';
@@ -162,7 +163,7 @@
         controls.appendChild(dots);
         controls.appendChild(counter);
         controls.appendChild(next);
-        gallery.appendChild(controls);
+        if (slides.length > 1) { gallery.appendChild(controls); }
 
         api.show = function (i) {
             var n = slides.length;
@@ -191,7 +192,12 @@
         gallery.setAttribute('aria-roledescription', 'image gallery');
         gallery.addEventListener('keydown', function (e) {
             if (lightbox && lightbox.isOpen()) { return; }
-            if (e.key === 'ArrowLeft') { api.step(-1); e.preventDefault(); }
+            if ((e.key === 'Enter' || e.key === ' ') && e.target === gallery) {
+                if (!lightbox) { lightbox = buildLightbox(); }
+                lightbox.open(api);
+                e.preventDefault();
+            }
+            else if (e.key === 'ArrowLeft') { api.step(-1); e.preventDefault(); }
             else if (e.key === 'ArrowRight') { api.step(1); e.preventDefault(); }
         });
 
